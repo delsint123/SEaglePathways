@@ -1,8 +1,8 @@
 import React, {ReactElement} from 'react';
 import {Button, Form, Input} from 'antd';
-import '../styling/Register.css';
+import '../styling/Login.css';
 
-export default function Register(): ReactElement {
+export default function Login(): ReactElement {
     const onFinish = (values: any) => {
         console.log('Success:', values);
       };
@@ -11,9 +11,11 @@ export default function Register(): ReactElement {
       };
 
     return (
-        <>
+        <div className='login__container'>
+            <h1>Log In</h1>
             <Form
-                name="register"
+                className='login'
+                name="login"
                 labelCol={{ span: 8 }}
                 wrapperCol={{ span: 16 }}
                 style={{ maxWidth: 600 }}
@@ -22,30 +24,6 @@ export default function Register(): ReactElement {
                 onFinishFailed={onFinishFailed}
                 autoComplete="off"
             >
-                <Form.Item
-                    label="Name"
-                    name="name"
-                    rules={[
-                        {
-                        required: true,
-                        message: 'Please input your name!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    label="Graduation Year"
-                    name="graduationYear"
-                    rules={[
-                        {
-                        required: true,
-                        message: 'Please input your graduation year!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
                 <Form.Item
                     label="Email"
                     name="email"
@@ -78,6 +56,7 @@ export default function Register(): ReactElement {
                     </Button>
                 </Form.Item>
             </Form>
-        </>
+        </div>
     );
 }
+
