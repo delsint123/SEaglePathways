@@ -1,31 +1,33 @@
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import IReview from '../models/reviewModel';
 import companyController from './companyController';
 import tagController from './tagController';
 
-async function submitReviewAsync(request: IReview) {
+async function submitReviewAsync(data: any) {
 
     //add tags
+    const review = {...data.body.request} as IReview
 
-    const addedCompany = await companyController.addCompanyAsync(request.company);
+    const addedCompany = await companyController.addCompanyAsync(review.company);
 
-    const [result] = db.query(
-        `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel)`,
+    const [result] = await db.query<ResultSetHeader>(
+        `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
-            request.title, 
-            request.userId, 
+            review.title, 
+            review.userId, 
             addedCompany.companyId, 
-            request.description, 
-            request.startDate, 
-            request.endDate, 
-            request.gradeLevel
+            review.description, 
+            review.startDate, 
+            review.endDate, 
+            review.gradeLevel
         ]
     )
 
-    if (result[0].affectedRows) {
+    if (result.affectedRows) {
         return {
-            reviewId: result[0].insertId,
-            ...request
+            reviewId: result.insertId,
+            ...review
         } as IReview;
     }
 

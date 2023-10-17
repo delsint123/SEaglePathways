@@ -2,7 +2,7 @@ import React, {ReactElement} from 'react';
 import {Modal, Form, Button, Input, DatePicker} from 'antd';
 import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel'
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 interface SubmitReviewModalProps {
     isModalOpen: boolean, 
@@ -17,7 +17,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     })
 
     const submitReview = async (request: IReview) => {
-        const res = await instance.post('/review/submit', {request});
+        const res = await instance.post<IReview, AxiosResponse>('/review/submit', {request});
         return res.data;
     }
 

@@ -5,6 +5,9 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
+import reviewRouter from './routes/reviewRoute';
+import userRouter from './routes/userRoute';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -23,6 +26,10 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+//routes
+app.use('/review', reviewRouter);
+app.use('/user', userRouter);
+
 // Port server is listening on
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
@@ -30,7 +37,7 @@ app.listen(PORT, () => {
 });
 
 // Error handling
-app.use((err, req, res, next) => {
+app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).send('Something broke!');
   console.error(err.stack);
 }); 
