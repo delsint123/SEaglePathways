@@ -22,3 +22,5 @@ router.post('/login', async (request: IUserLoginModel, res: any, next: any) => {
         next(err);
     }
 });
+
+export default router;

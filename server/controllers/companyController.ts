@@ -1,16 +1,17 @@
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import ICompany from '../models/companyModel';
 
 async function addCompanyAsync(request: string) {
 
-    const [result] = db.query(
-        `INSERT INTO company (name)`,
-        request
+    const [result] = await db.query<ResultSetHeader>(
+        `INSERT INTO company (name) VALUES (?)`,
+        [request]
     )
 
-    if (result[0].affectedRows) {
+    if (result.affectedRows) {
         return {
-            companyId: result[0].insertId,
+            companyId: result.insertId,
             name: request
         } as ICompany;
     }

@@ -10,7 +10,27 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ],
+        "moduleDirectory": [
+          "node_modules",
+          "src/"
+        ]
+      }
+    }
+  },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.4",
+    "@types/cors": "^2.8.14",
+    "@types/express": "^4.17.19",
+    "nodemon": "^3.0.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {

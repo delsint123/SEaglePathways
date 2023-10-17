@@ -6,7 +6,7 @@ import { RowDataPacket } from "mysql2";
 
 async function registerAsync(request: IUserRequestModel): Promise<IUser> {
 
-    const [...user] = await db.query(`SELECT * FROM user WHERE email = ?`, [request.email]);
+    const [...user] = await db.query<RowDataPacket[]>(`SELECT * FROM user WHERE email = ?`, [request.email]);
 
     if(user.length) {
         throw new Error('An account has already been created with this email.');
@@ -14,7 +14,7 @@ async function registerAsync(request: IUserRequestModel): Promise<IUser> {
 
     const [firstName, lastName] = request.name.split(' ');
 
-    const [result] = await db.query(
+    const [result] = await db.query<RowDataPacket[]>(
         `INSERT INTO user (firstName, lastName, email, password, graduationYear)`,
         [firstName, lastName, request.email, request.password, request.graduationYear]
     );
@@ -31,7 +31,7 @@ async function registerAsync(request: IUserRequestModel): Promise<IUser> {
 
 async function loginAsync(request: IUserLoginModel): Promise<IUser> {
 
-    const [result] = await db.query(
+    const [result] = await db.query<RowDataPacket[]>(
         `SELECT * FROM user WHERE email = ?`, [request.email]
     );
 
