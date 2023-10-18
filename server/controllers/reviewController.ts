@@ -2,12 +2,13 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import IReview from '../models/reviewModel';
 import companyController from './companyController';
+import dateFormat from 'dateformat';
 import tagController from './tagController';
 
 async function submitReviewAsync(data: any) {
 
     //add tags
-    const review = {...data.body.request} as IReview
+    const review = {...data.body.review} as IReview
 
     const addedCompany = await companyController.addCompanyAsync(review.company);
 
@@ -18,8 +19,8 @@ async function submitReviewAsync(data: any) {
             review.userId, 
             addedCompany.companyId, 
             review.description, 
-            review.startDate, 
-            review.endDate, 
+            dateFormat(review.startDate, "isoDate"), 
+            dateFormat(review.endDate, "isoDate"), 
             review.gradeLevel
         ]
     )
