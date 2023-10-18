@@ -3,6 +3,7 @@ import {Modal, Form, Button, Input, DatePicker} from 'antd';
 import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel'
 import axios, { AxiosResponse } from 'axios';
+import ISubmitReviewViewModel from '../models/submitReviewViewModel';
 
 interface SubmitReviewModalProps {
     isModalOpen: boolean, 
@@ -10,37 +11,44 @@ interface SubmitReviewModalProps {
 }
 
 export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactElement {
-    const [reviewForm, setReviewForm] = React.useState<IReview>({} as IReview);
+    const [form] = Form.useForm();
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
     })
 
-    const submitReview = async (request: IReview) => {
-        const res = await instance.post<IReview, AxiosResponse>('/review/submit', {request});
+    const submitReview = async (request: ISubmitReviewViewModel) => {
+        const review = {
+            title: request.title,
+            company: request.company,
+            description: request.description,
+            startDate: request.datesAttended[0].toDate(),
+            endDate: request.datesAttended[1].toDate(),
+            gradeLevel: request.gradeLevel
+        } as IReview;
+
+        const res = await instance.post<IReview, AxiosResponse>('/review/submit', {review});
+        props.setIsModalOpen(false);
         return res.data;
     }
 
-    const handleOk = () => {
-        submitReview(reviewForm);
-        props.setIsModalOpen(false);
-    };
     const handleCancel = () => {
         props.setIsModalOpen(false);
     };
 
     return (
         <>
-            <Modal title="Submit Review" open={props.isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+            <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
                 <Form
                     className='login'
                     name="login"
+                    form={form}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
                     initialValues={{ remember: true }}
                     onFinish={submitReview}
-                    // onFinishFailed={onFinishFailed}
+                    //onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
                     <Form.Item
@@ -69,7 +77,16 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         <Input />
                     </Form.Item>
 
-                    <Form.Item label="Dates Attended">
+                    <Form.Item 
+                        label="Dates Attended"
+                        name="datesAttended"
+                        rules={[
+                            {
+                            required: true,
+                            message: 'Please input the title of your review!',
+                            },
+                        ]}
+                    >
                         <DatePicker.RangePicker />
                     </Form.Item>
 
@@ -97,12 +114,6 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         ]}
                     >
                         <Input />
-                    </Form.Item>
-
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                        <Button type="primary" htmlType="submit">
-                            Submit
-                        </Button>
                     </Form.Item>
                 </Form>
             </Modal>
