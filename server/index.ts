@@ -1,15 +1,10 @@
 import express from 'express';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
 import reviewRouter from './routes/reviewRoute';
 import userRouter from './routes/userRoute';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Create express app
 const app = express();
