@@ -1,7 +1,6 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 import {Button} from 'antd';
 import '../styling/Review.css';
-import IReview from '../../../server/models/reviewModel'
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';

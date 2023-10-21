@@ -9,6 +9,8 @@ import tagController from './tagController';
 async function submitReviewAsync(data: any) {
 
     //add tags
+
+    //integrate validation for data
     const review = {...data.body.review} as IReview
 
     const addedCompany = await companyController.addCompanyAsync(review.company);

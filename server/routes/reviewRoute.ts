@@ -1,7 +1,6 @@
 import express from 'express';
 import IReview from '../models/reviewModel';
 import reviewController from '../controllers/reviewController';
-import { request } from 'http';
 
 const router = express.Router();
 
