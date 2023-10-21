@@ -2,25 +2,35 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import IReview from '../models/reviewModel';
 import IReviewViewModel from '../viewModels/reviewViewModel';
-import companyController from './companyController';
 import dateFormat from 'dateformat';
 import tagController from './tagController';
 
 async function submitReviewAsync(data: any) {
 
-    //add tags
+    //TODO: add tags
+    
+    const review = {...data.body.review} as IReview;
 
-    //integrate validation for data
-    const review = {...data.body.review} as IReview
+    //check if specific fields are null
+    const isValidReview = validateReview(review);
 
-    const addedCompany = await companyController.addCompanyAsync(review.company);
+    if(!isValidReview) {
+        throw new Error('Review is not valid as some values are null. Please fill in those values and try again.');
+    }
+
+    //add review
+    const [currCompany] = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE name = ?`, [review.company]);
+
+    if(!currCompany.length) {
+        throw new Error('The company entered could not be retrieved');
+    }
 
     const [result] = await db.query<ResultSetHeader>(
         `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
             review.title, 
             review.userId, 
-            addedCompany.companyId, 
+            currCompany[0].companyId, 
             review.description, 
             dateFormat(review.startDate, "isoDate"), 
             dateFormat(review.endDate, "isoDate"), 
@@ -43,8 +53,6 @@ async function getReviewsAsync() {
 
     //get company name
     const [company] = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
-
-    console.log(review);
 
     const reviewsWithCompany = review.map(review => {
         const companyForReview = company.find(comp => comp.companyId === review.companyId);
@@ -77,6 +85,20 @@ async function getReviewsAsync() {
     }
 
     throw new Error('Reviews could not be retrieved. Please try again.');
+}
+
+function validateReview(review: IReview): boolean {
+    if(review.title == null 
+        || review.company == null 
+        || review.description == null 
+        || review.startDate == null 
+        || review.endDate == null 
+        || review.gradeLevel == null) {
+
+        return false;
+    }
+
+    return true;
 }
 
 export default {

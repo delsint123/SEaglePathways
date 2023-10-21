@@ -5,7 +5,21 @@ import ICompany from '../models/companyModel';
 async function addCompanyAsync(request: string) {
 
     //integrate validation for data
+    if(!request.length) {
+        throw new Error('Company entered is not valid.');
+    }
 
+    const [currentCompanies] = await db.query<RowDataPacket[]>(
+        `SELECT * FROM company WHERE name = ?`, 
+        [request]
+    )
+
+    //validation for duplicates
+    if(currentCompanies.length) {
+        throw new Error('This company already exists, please search for it in the dropdown.');
+    }
+
+    //insert company
     const [result] = await db.query<ResultSetHeader>(
         `INSERT INTO company (name) VALUES (?)`,
         [request]
