@@ -52,6 +52,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     const handleCancel = () => {
         props.setIsModalOpen(false);
+        form.resetFields();
     };
 
     const searchCompanyFilter = (input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
@@ -191,7 +192,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             },
                         ]}
                     >
-                        <Select defaultValue="Freshman" options={gradeLevels} />
+                        <Select placeholder="Select a grade level" options={gradeLevels} />
                     </Form.Item>
                 </Form>
             </Modal>
