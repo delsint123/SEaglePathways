@@ -1,5 +1,5 @@
 import React, {ReactElement} from 'react';
-import {Modal, Form, Button, Input, DatePicker} from 'antd';
+import {Modal, Form, Select, Input, DatePicker} from 'antd';
 import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel'
 import axios, { AxiosResponse } from 'axios';
@@ -29,12 +29,36 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
         const res = await instance.post<IReview, AxiosResponse>('/review/submit', {review});
         props.setIsModalOpen(false);
+        form.resetFields();
         return res.data;
     }
 
     const handleCancel = () => {
         props.setIsModalOpen(false);
     };
+
+    const gradeLevels = [
+        {
+            value: 'Freshman',
+            label: 'Freshman'
+        },
+        {
+            value: 'Sophomore',
+            label: 'Sophomore'
+        },
+        {
+            value: 'Junior',
+            label: 'Junior'
+        },
+        {
+            value: 'Senior',
+            label: 'Senior'
+        },
+        {
+            value: 'New Grad',
+            label: 'New Grad'
+        },
+    ];
 
     return (
         <>
@@ -113,7 +137,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             },
                         ]}
                     >
-                        <Input />
+                        <Select defaultValue="Freshman" options={gradeLevels} />
                     </Form.Item>
                 </Form>
             </Modal>
