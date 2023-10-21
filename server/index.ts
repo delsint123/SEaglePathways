@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import reviewRouter from './routes/reviewRoute';
 import userRouter from './routes/userRoute';
+import companyRouter from './routes/companyRoute';
 
 // Create express app
 const app = express();
@@ -24,6 +25,7 @@ app.use(cookieParser());
 //routes
 app.use('/review', reviewRouter);
 app.use('/user', userRouter);
+app.use('/company', companyRouter);
 
 // Port server is listening on
 const PORT = process.env.PORT || 5000;

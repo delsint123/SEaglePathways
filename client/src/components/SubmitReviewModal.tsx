@@ -1,9 +1,11 @@
-import React, {ReactElement} from 'react';
-import {Modal, Form, Select, Input, DatePicker} from 'antd';
+import React, {ReactElement, useEffect} from 'react';
+import {PlusOutlined} from '@ant-design/icons';
+import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button} from 'antd';
 import '../styling/SubmitReviewModal.css';
-import IReview from '../../../server/models/reviewModel'
+import IReview from '../../../server/models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
+import ICompany from '../../../server/models/companyModel';
 
 interface SubmitReviewModalProps {
     isModalOpen: boolean, 
@@ -11,13 +13,15 @@ interface SubmitReviewModalProps {
 }
 
 export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactElement {
+    const [companies, setCompanies] = React.useState<ICompany[]>([]);
+    const [newCompany, setNewCompany] = React.useState<string>("");
     const [form] = Form.useForm();
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
     })
 
-    const submitReview = async (request: ISubmitReviewViewModel) => {
+    const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
         const review = {
             title: request.title,
             company: request.company,
@@ -33,9 +37,24 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         return res.data;
     }
 
+    const getCompaniesAsync = async (): Promise<void> => {
+        const res = await instance.get('/company/allCompanies');
+
+        const companies = [...res.data] as ICompany[];
+        setCompanies(companies);
+    }
+
+    const addCompany = async (company: string): Promise<void> => {
+        const res = await instance.post<string, AxiosResponse>('/company/add', {company});
+        setNewCompany('');
+        return res.data;
+    }
+
     const handleCancel = () => {
         props.setIsModalOpen(false);
     };
+
+    const searchCompanyFilter = (input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
     const gradeLevels = [
         {
@@ -60,6 +79,10 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         },
     ];
 
+    useEffect(() => {
+        getCompaniesAsync();
+    }, [newCompany])
+
     return (
         <>
             <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
@@ -71,7 +94,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
                     initialValues={{ remember: true }}
-                    onFinish={submitReview}
+                    onFinish={submitReviewAsync}
                     //onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
@@ -98,7 +121,38 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             },
                         ]}
                     >
-                        <Input />
+                        <Select
+                            showSearch
+                            placeholder="Select a company"
+                            filterOption={searchCompanyFilter}
+                            options={companies.map(company => ({key: company.companyId, value: company.name, label: company.name}))}
+                            dropdownRender={(menu) => (
+                                <>
+                                    {menu}
+                                    <Divider
+                                        style={{
+                                        margin: '8px 0',
+                                        }}
+                                    />
+                                    <Space
+                                        style={{
+                                        padding: '0 8px 4px',
+                                        }}
+                                    >
+                                        <Input
+                                            placeholder="Please enter item"
+                                            //ref={inputRef}
+                                            value={newCompany}
+                                            onChange={(e) => setNewCompany(e.target.value)}
+                                            onKeyDown={(e) => e.stopPropagation()}
+                                        />
+                                        <Button type="text" icon={<PlusOutlined />} onClick={() => addCompany(newCompany)}>
+                                            Add company
+                                        </Button>
+                                    </Space>
+                                </>
+                              )}
+                        />
                     </Form.Item>
 
                     <Form.Item 
