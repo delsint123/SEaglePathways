@@ -1,23 +1,21 @@
-import express from 'express';
+import express, {Request, Response, NextFunction} from 'express';
 import companyController from '../controllers/companyController';
 
 const router = express.Router();
 
-router.post('/add', async (req: any, res: any, next: any) => {
+router.post('/add', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const result = await companyController.addCompanyAsync(req.body.company);
-        res.json(result);
-        console.log("Company saved!", result);
+        companyController.addCompanyAsync(req.body.company, res);
+        console.log("Company saved!");
     } catch (err) {
         next(err);
     }
 });
 
-router.get('/allCompanies', async (req: any, res: any, next: any) => {
+router.get('/allCompanies', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const result = await companyController.getAllCompaniesAsync();
-        res.json(result);
-        console.log("Companies Retrieved!", result);
+        await companyController.getAllCompaniesAsync(res);
+        console.log("Companies Retrieved!");
     } catch (err) {
         next(err);
     }
