@@ -47,6 +47,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     const addCompany = async (company: string): Promise<void> => {
         const res = await instance.post<string, AxiosResponse>('/company/add', {company});
         setNewCompany('');
+        getCompaniesAsync();
         return res.data;
     }
 
@@ -82,7 +83,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     useEffect(() => {
         getCompaniesAsync();
-    }, [newCompany])
+    }, [])
 
     return (
         <>
