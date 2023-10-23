@@ -4,8 +4,9 @@ import IReview from '../models/reviewModel';
 import IReviewViewModel from '../viewModels/reviewViewModel';
 import dateFormat from 'dateformat';
 import tagController from './tagController';
+import { Request, Response } from 'express';
 
-async function submitReviewAsync(data: any) {
+async function submitReviewAsync(data: Request, response: Response) {
 
     //TODO: add tags
     
@@ -15,22 +16,26 @@ async function submitReviewAsync(data: any) {
     const isValidReview = validateReview(review);
 
     if(!isValidReview) {
-        throw new Error('Review is not valid as some values are null. Please fill in those values and try again.');
+        response.status(400).send('Review is not valid as some values are null. Please fill in those values and try again.');
     }
 
     //add review
-    const [currCompany] = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE name = ?`, [review.company]);
+    const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE name = ?`, [review.company]);
+    let currCompany: RowDataPacket[] = [];
 
-    if(!currCompany.length) {
-        throw new Error('The company entered could not be retrieved');
+    if(!companyRes[0].length) {
+        response.status(400).send('The company entered could not be retrieved');
+    }
+    else {
+        currCompany = companyRes[0];
     }
 
-    const [result] = await db.query<ResultSetHeader>(
+    const result = await db.query<ResultSetHeader>(
         `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
             review.title, 
             review.userId, 
-            currCompany[0].companyId, 
+            currCompany[0]?.companyId, 
             review.description, 
             dateFormat(review.startDate, "isoDate"), 
             dateFormat(review.endDate, "isoDate"), 
@@ -38,21 +43,44 @@ async function submitReviewAsync(data: any) {
         ]
     )
 
-    if (result.affectedRows) {
-        return {
-            reviewId: result.insertId,
-            ...review
-        } as IReview;
+    let res: ResultSetHeader = {} as ResultSetHeader;
+
+    if(!result) {
+        response.status(400).send('Review could not be submitted. Please try again.');
+    }
+    else {
+        res = result[0];
     }
 
-    throw new Error('Review could not be submitted. Please try again.');
+    if (res.affectedRows) {
+        response.status(200).json({
+            reviewId: res.insertId,
+            ...review
+        } as IReview);
+    }
 }
 
-async function getReviewsAsync() {
-    const [review] = await db.query<RowDataPacket[]>(`SELECT * FROM review`);
+async function getReviewsAsync(response: Response) {
+    const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review`);
+    let review: RowDataPacket[] = [];
+
+    if(!reviewRes[0].length) {
+        response.status(400).send('Reviews could not be retrieved. Please try again.');
+    } 
+    else {
+        review = reviewRes[0];
+    }
 
     //get company name
-    const [company] = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
+    const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
+    let company: RowDataPacket[] = [];
+
+    if(!companyRes) {
+        response.status(400).send('The companies could not be retrieved');
+    }
+    else {
+        company = companyRes[0];
+    }
 
     const reviewsWithCompany = review.map(review => {
         const companyForReview = company.find(comp => comp.companyId === review.companyId);
@@ -81,10 +109,8 @@ async function getReviewsAsync() {
     })
 
     if(review.length) {
-        return reviewsWithCompany
+        response.status(200).json(reviewsWithCompany);
     }
-
-    throw new Error('Reviews could not be retrieved. Please try again.');
 }
 
 function validateReview(review: IReview): boolean {
