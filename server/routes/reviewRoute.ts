@@ -1,5 +1,4 @@
 import express, {Request, Response, NextFunction} from 'express';
-import IReview from '../models/reviewModel';
 import reviewController from '../controllers/reviewController';
 
 const router = express.Router();

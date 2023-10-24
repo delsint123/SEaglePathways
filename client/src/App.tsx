@@ -15,12 +15,11 @@ function App(): ReactElement {
                 <Link to={"/"} className="nav__logo"><img alt="SEaglePathways" src={Logo} className="logo"/></Link>
                 <Link to={"/"} className='nav__reviews'>Reviews</Link>
                 <Link to={"/login"} className='nav__login'>Login</Link>
-                {/* <Link to={"/register"} className='nav__register'>Register</Link> */}
             </nav>
             <Routes>
                 <Route path='/' element={<Review />}/>
                 <Route path='/login' element={<Login />}/>
-                {/* <Route path='/register' element={<Register />}/> */}
+                <Route path='/register' element={<Register />}/>
             </Routes>
             <footer>
                 SEaglePathways

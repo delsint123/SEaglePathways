@@ -1,14 +1,32 @@
 import React, {ReactElement} from 'react';
 import {Button, Form, Input} from 'antd';
+import IUserRequestModel from '../../../server/models/userRequestModel';
 import '../styling/Register.css';
+import axios, { AxiosResponse } from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Register(): ReactElement {
-    const onFinish = (values: any) => {
-        console.log('Success:', values);
-      };
-      const onFinishFailed = (errorInfo: any) => {
+    const navigate = useNavigate();
+
+    const instance = axios.create({
+        baseURL: 'http://localhost:5000'
+    })
+
+    const submitUser = async (user: IUserRequestModel) => {
+
+        const res = await instance.post<IUserRequestModel, AxiosResponse>('/user/register', {user});
+
+        //TODO:redirect to account page if successful
+        if (res.status === 200) {
+            navigate('/');
+        }
+        
+        return res.data;
+    };
+
+    const onFinishFailed = (errorInfo: any) => {
         console.log('Failed:', errorInfo);
-      };
+    };
 
     return (
         <>
@@ -18,8 +36,8 @@ export default function Register(): ReactElement {
                 wrapperCol={{ span: 16 }}
                 style={{ maxWidth: 600 }}
                 initialValues={{ remember: true }}
-                onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
+                onFinish={submitUser}
+                //onFinishFailed={onFinishFailed}
                 autoComplete="off"
             >
                 <Form.Item
