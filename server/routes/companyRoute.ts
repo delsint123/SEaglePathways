@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/add', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        companyController.addCompanyAsync(req.body.company, res);
+        await companyController.addCompanyAsync(req.body.company, res);
         console.log("Company saved!");
     } catch (err) {
         next(err);

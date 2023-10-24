@@ -3,52 +3,58 @@ import db from '../database';
 import IUserRequestModel from '../models/userRequestModel';
 import IUser from '../models/userModel';
 import IUserLoginModel from '../models/userLoginModel';
-import { RowDataPacket } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 
-async function registerAsync(request: Request): Promise<IUser> {
+async function registerAsync(request: Request, response: Response): Promise<void> {
 
-    const [...user] = await db.query<RowDataPacket[]>(
+    const user = request.body.user as IUserRequestModel;
+
+    const [...userEmail] = await db.query<RowDataPacket[]>(
         `SELECT * FROM user WHERE email = ?`, 
-        [request.body.email]
+        [user.email]
     );
 
-    if(user.length) {
-        throw new Error('An account has already been created with this email.');
+    if(userEmail[0].length) {
+        response.status(400).send('An account has already been created with this email.');
     }
 
-    const [firstName, lastName] = request.body.name.split(' ');
+    const [firstName, lastName] = user.name.split(' ');
 
-    const [result] = await db.query<RowDataPacket[]>(
-        `INSERT INTO user (firstName, lastName, email, password, graduationYear)`,
-        [firstName, lastName, request.body.email, request.body.password, request.body.graduationYear]
+    const [result] = await db.query<ResultSetHeader>(
+        `INSERT INTO user (firstName, lastName, email, password, graduationYear) VALUES (?, ?, ?, ?, ?)`,
+        [firstName, lastName, user.email, user.password, user.graduationYear]
     );
 
-    if (result[0].affectedRows) {
-        return {
-            userId: result[0].insertId,
+    if (result.affectedRows) {
+        response.status(200).json({
+            userId: result.insertId,
             ...request.body
-        } as IUser;
+        } as IUser);
     }
-
-    throw new Error('User could not be created');
+    else {
+        response.status(400).send('User could not be created');
+    }
 }
 
-async function loginAsync(request: Request): Promise<IUser> {
+async function loginAsync(request: Request, response: Response): Promise<void> {
+
+    const user = request.body.user as IUserRequestModel;
 
     const [result] = await db.query<RowDataPacket[]>(
-        `SELECT * FROM user WHERE email = ?`, [request.body.email]
+        `SELECT * FROM user WHERE email = ?`, [user.email]
     );
 
-    if(result.length && result[0].password == request.body.password) {
-        return {
+    if(result.length && result[0].password == user.password) {
+        response.status(200).json({
             ...result[0]
-        } as IUser;
+        } as IUser);
     }
     else if(result.length) {
-        throw new Error('Your password is incorrect. Try Again.');
+        response.status(400).send('Your password is incorrect. Try Again.');
     }
-
-    throw new Error('An error occurred while logging in. Try Again.');
+    else {
+        response.status(400).send('Your account could not be found. Try Again.');
+    }
 }
 
 export default {

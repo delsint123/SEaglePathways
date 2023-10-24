@@ -6,7 +6,7 @@ import dateFormat from 'dateformat';
 import tagController from './tagController';
 import { Request, Response } from 'express';
 
-async function submitReviewAsync(data: Request, response: Response) {
+async function submitReviewAsync(data: Request, response: Response): Promise<void> {
 
     //TODO: add tags
     
@@ -60,7 +60,7 @@ async function submitReviewAsync(data: Request, response: Response) {
     }
 }
 
-async function getReviewsAsync(response: Response) {
+async function getReviewsAsync(response: Response): Promise<void> {
     const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review`);
     let review: RowDataPacket[] = [];
 
