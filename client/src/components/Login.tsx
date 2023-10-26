@@ -6,18 +6,23 @@ import axios, { AxiosResponse } from 'axios';
 import IUserLoginModel from '../../../server/models/userLoginModel';
 
 export default function Login(): ReactElement {
+    //used to navigate to another route
     const navigate = useNavigate();
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
     })
 
+    //sends a request to the server to login a user
     const loginUser = async (user: IUserLoginModel) => {
 
         const res = await instance.post<IUserLoginModel, AxiosResponse>('/user/login', {user});
 
         //TODO:redirect to account page if successful
+        //checks if the response is successful and redirects to the home page
         if (res.status === 200) {
+            // sessionStorage.setItem('user', res.data.user)
+            // console.log(sessionStorage.getItem('user'))
             navigate('/');
         }
         
@@ -32,6 +37,8 @@ export default function Login(): ReactElement {
         <div className='login__container'>
 
             <h1>Log In</h1>
+            
+            {/*Uses form, button, and input components retrieved from AntDesign*/}
             <Form
                 className='login'
                 name="login"

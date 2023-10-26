@@ -4,6 +4,7 @@ import IUserRequestModel from '../models/userRequestModel';
 import IUser from '../models/userModel';
 import IUserLoginModel from '../models/userLoginModel';
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import session from 'express-session';
 
 async function registerAsync(request: Request, response: Response): Promise<void> {
 
@@ -45,6 +46,8 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
     );
 
     if(result.length && result[0].password == user.password) {
+        request.session.id = result[0].userId;
+
         response.status(200).json({
             ...result[0]
         } as IUser);
