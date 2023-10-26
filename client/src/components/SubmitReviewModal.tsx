@@ -7,57 +7,76 @@ import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
 import ICompany from '../../../server/models/companyModel';
 
+//Define the properties that this component expects
 interface SubmitReviewModalProps {
     isModalOpen: boolean, 
     setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
+//Define the functional component that represents
 export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactElement {
+    //initialize state
     const [companies, setCompanies] = React.useState<ICompany[]>([]);
     const [newCompany, setNewCompany] = React.useState<string>("");
     const [form] = Form.useForm();
 
+    //create an axios instance
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
     })
 
+    //submits a review to a server asynchronously
     const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
         const review = {
             title: request.title,
             company: request.company,
             description: request.description,
+            //convert the dates to a date object
             startDate: request.datesAttended[0].toDate(),
             endDate: request.datesAttended[1].toDate(),
             gradeLevel: request.gradeLevel
         } as IReview;
 
+        //post the review to the server
         const res = await instance.post<IReview, AxiosResponse>('/review/submit', {review});
+        
+        //Close the modal and reset form fields
         props.setIsModalOpen(false);
         form.resetFields();
+        
+        //Return the response data
         return res.data;
     }
 
+    //get all companies from the server
     const getCompaniesAsync = async (): Promise<void> => {
         const res = await instance.get('/company/allCompanies');
 
+        //update state with data retrieved from server
         const companies = [...res.data] as ICompany[];
         setCompanies(companies);
     }
 
+    //Add a company to the database
     const addCompany = async (company: string): Promise<void> => {
         const res = await instance.post<string, AxiosResponse>('/company/add', {company});
+
+        //clear new company state and get companies from server
         setNewCompany('');
         getCompaniesAsync();
         return res.data;
     }
 
     const handleCancel = () => {
+        //close form modal and reset form fields
         props.setIsModalOpen(false);
         form.resetFields();
     };
 
+    //custom filter for company select
     const searchCompanyFilter = (input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+    //define grade levels for select
     const gradeLevels = [
         {
             value: 'Freshman',
@@ -81,13 +100,16 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         },
     ];
 
+    //get all companies after component first renders
     useEffect(() => {
         getCompaniesAsync();
     }, [])
 
     return (
         <>
+            {/*Uses modal component retrieved from AntDesign*/}
             <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
+                {/*Uses form, form.item, and select components retrieved from AntDesign*/}
                 <Form
                     className='login'
                     name="login"

@@ -6,17 +6,20 @@ import axios, { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register(): ReactElement {
+    //used to navigate to another route
     const navigate = useNavigate();
 
+    //create an axios instance
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
     })
 
-    const submitUser = async (user: IUserRequestModel) => {
-
+    //submits/registers a user to the server asynchronously
+    const submitUserAsync = async (user: IUserRequestModel) => {
         const res = await instance.post<IUserRequestModel, AxiosResponse>('/user/register', {user});
 
         //TODO:redirect to account page if successful
+        //checks if the response is successful and redirects to the home page
         if (res.status === 200) {
             navigate('/');
         }
@@ -30,13 +33,14 @@ export default function Register(): ReactElement {
 
     return (
         <>
+            {/*Uses form, button, and input components retrieved from AntDesign*/}
             <Form
                 name="register"
                 labelCol={{ span: 8 }}
                 wrapperCol={{ span: 16 }}
                 style={{ maxWidth: 600 }}
                 initialValues={{ remember: true }}
-                onFinish={submitUser}
+                onFinish={submitUserAsync}
                 //onFinishFailed={onFinishFailed}
                 autoComplete="off"
             >
