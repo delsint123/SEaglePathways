@@ -21,8 +21,7 @@ export default function Login(): ReactElement {
         //TODO:redirect to account page if successful
         //checks if the response is successful and redirects to the home page
         if (res.status === 200) {
-            // sessionStorage.setItem('user', res.data.user)
-            // console.log(sessionStorage.getItem('user'))
+            sessionStorage.setItem('user', res.data.userId)
             navigate('/');
         }
         

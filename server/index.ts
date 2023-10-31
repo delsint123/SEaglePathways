@@ -8,6 +8,12 @@ import userRouter from './routes/userRoute';
 import companyRouter from './routes/companyRoute';
 import session from 'express-session';
 
+declare module 'express-session' {
+    interface SessionData {
+      userId: number;
+    }
+  }
+
 // Create express app
 const app = express();
 
@@ -23,11 +29,11 @@ app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(session({
-//     secret: 'userSecretSession',
-//     resave: false,
-//     saveUninitialized: true,
-// }));
+app.use(session({
+    secret: 'userSecretSession',
+    resave: false,
+    saveUninitialized: true,
+}));
 
 //routes
 app.use('/review', reviewRouter);
