@@ -17,7 +17,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
     try {
         validateReview(review);
     } catch (error) {
-        response.status(400).send(error);
+        response.status(500).send(error);
     }
 
     //find companyId
@@ -26,7 +26,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
     try {
         currCompany = await retrieveCompanyForReviewAsync(review.company);
     } catch (error) {
-        response.status(400).send(error);
+        response.status(500).send(error);
     }
     
     //add review
@@ -61,7 +61,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
         }
 
     } catch (error) {
-        response.status(400).send(error);
+        response.status(500).send(error);
     }
 }
 
@@ -80,7 +80,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
         }
 
     } catch (error) {
-        response.status(400).send(error);
+        response.status(500).send(error);
     }
 
     //get company name
@@ -90,13 +90,13 @@ async function getReviewsAsync(response: Response): Promise<void> {
         const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
 
         if(!companyRes) {
-            response.status(400).send('The companies could not be retrieved');
+            throw new Error('The companies could not be retrieved');
         }
         else {
             companies = companyRes[0];
         }
     } catch (error) {
-        response.status(400).send(error);
+        response.status(500).send(error);
     }
 
     const reviewsWithCompany = reviews.map(review => {
@@ -128,7 +128,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
     if(reviews.length) {
         response.status(200).json(reviewsWithCompany);
     } else {
-        response.status(400).send('An error while processing the retrieved reviews.');
+        response.status(500).send('An error while processing the retrieved reviews.');
     }
 }
 
