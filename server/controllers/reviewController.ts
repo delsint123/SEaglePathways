@@ -5,85 +5,102 @@ import IReviewViewModel from '../viewModels/reviewViewModel';
 import dateFormat from 'dateformat';
 import tagController from './tagController';
 import { Request, Response } from 'express';
+import ICompany from '../models/companyModel';
 
-async function submitReviewAsync(data: Request, response: Response) {
+async function submitReviewAsync(data: Request, response: Response): Promise<void> {
 
     //TODO: add tags
     
     const review = {...data.body.review} as IReview;
 
     //check if specific fields are null
-    const isValidReview = validateReview(review);
-
-    if(!isValidReview) {
-        response.status(400).send('Review is not valid as some values are null. Please fill in those values and try again.');
+    try {
+        validateReview(review);
+    } catch (error) {
+        response.status(500).send(error);
     }
 
+    //find companyId
+    let currCompany: ICompany = {} as ICompany;
+
+    try {
+        currCompany = await retrieveCompanyForReviewAsync(review.company);
+    } catch (error) {
+        response.status(500).send(error);
+    }
+    
     //add review
-    const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE name = ?`, [review.company]);
-    let currCompany: RowDataPacket[] = [];
+    try {
+        const result = await db.query<ResultSetHeader>(
+            `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                review.title, 
+                review.userId, 
+                currCompany.companyId, 
+                review.description, 
+                dateFormat(review.startDate, "isoDate"), 
+                dateFormat(review.endDate, "isoDate"), 
+                review.gradeLevel
+            ]
+        )
 
-    if(!companyRes[0].length) {
-        response.status(400).send('The company entered could not be retrieved');
-    }
-    else {
-        currCompany = companyRes[0];
-    }
+        let res: ResultSetHeader = {} as ResultSetHeader;
 
-    const result = await db.query<ResultSetHeader>(
-        `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-            review.title, 
-            review.userId, 
-            currCompany[0]?.companyId, 
-            review.description, 
-            dateFormat(review.startDate, "isoDate"), 
-            dateFormat(review.endDate, "isoDate"), 
-            review.gradeLevel
-        ]
-    )
+        if(!result) {
+            throw new Error('Review could not be submitted. Please try again.');
+        }
+        else {
+            res = result[0];
+        }
 
-    let res: ResultSetHeader = {} as ResultSetHeader;
+        if (res.affectedRows) {
+            response.status(200).json({
+                reviewId: res.insertId,
+                ...review
+            } as IReview);
+        }
 
-    if(!result) {
-        response.status(400).send('Review could not be submitted. Please try again.');
-    }
-    else {
-        res = result[0];
-    }
-
-    if (res.affectedRows) {
-        response.status(200).json({
-            reviewId: res.insertId,
-            ...review
-        } as IReview);
+    } catch (error) {
+        response.status(500).send(error);
     }
 }
 
-async function getReviewsAsync(response: Response) {
-    const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review`);
-    let review: RowDataPacket[] = [];
+async function getReviewsAsync(response: Response): Promise<void> {
+    //retrieve reviews
 
-    if(!reviewRes[0].length) {
-        response.status(400).send('Reviews could not be retrieved. Please try again.');
-    } 
-    else {
-        review = reviewRes[0];
+    let reviews: RowDataPacket[] = [];
+    try {
+        const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review`);
+
+        if(!reviewRes[0].length) {
+            throw new Error('Reviews could not be retrieved. Please try again.');
+        } 
+        else {
+            reviews = reviewRes[0];
+        }
+
+    } catch (error) {
+        response.status(500).send(error);
     }
 
     //get company name
-    const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
-    let company: RowDataPacket[] = [];
+    let companies: RowDataPacket[] = [];
 
-    if(!companyRes) {
-        response.status(400).send('The companies could not be retrieved');
-    }
-    else {
-        company = companyRes[0];
+    try {
+        const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
+
+        if(!companyRes) {
+            throw new Error('The companies could not be retrieved');
+        }
+        else {
+            companies = companyRes[0];
+        }
+    } catch (error) {
+        response.status(500).send(error);
     }
 
-    const reviewsWithCompany = review.map(review => {
-        const companyForReview = company.find(comp => comp.companyId === review.companyId);
+    const reviewsWithCompany = reviews.map(review => {
+        const companyForReview = companies.find(comp => comp.companyId === review.companyId);
 
         if(companyForReview) {
             return {
@@ -108,8 +125,10 @@ async function getReviewsAsync(response: Response) {
         }
     })
 
-    if(review.length) {
+    if(reviews.length) {
         response.status(200).json(reviewsWithCompany);
+    } else {
+        response.status(500).send('An error while processing the retrieved reviews.');
     }
 }
 
@@ -121,10 +140,23 @@ function validateReview(review: IReview): boolean {
         || review.endDate == null 
         || review.gradeLevel == null) {
 
-        return false;
+        throw new Error('Review is not valid as some values are null. Please fill in those values and try again.');
     }
 
     return true;
+}
+
+async function retrieveCompanyForReviewAsync(reqCompany: string): Promise<ICompany> {
+    const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE name = ?`, [reqCompany]);
+
+    if(!companyRes[0].length) {
+        throw new Error('The company entered could not be retrieved');
+    }
+    
+    return {
+        companyId: companyRes[0][0].companyId,
+        name: companyRes[0][0].name
+    } as ICompany;
 }
 
 export default {

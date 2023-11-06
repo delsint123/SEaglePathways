@@ -3,7 +3,7 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import ICompany from '../models/companyModel';
 
-async function addCompanyAsync(request: string, response: Response) {
+async function addCompanyAsync(request: string, response: Response): Promise<void> {
 
     //integrate validation for data
     if(!request.length) {
@@ -37,7 +37,7 @@ async function addCompanyAsync(request: string, response: Response) {
     }
 }
 
-async function getAllCompaniesAsync(response: Response) {
+async function getAllCompaniesAsync(response: Response): Promise<void> {
     const [companies] = await db.query<RowDataPacket[]>(`SELECT * FROM company`)
 
     if(companies.length) {

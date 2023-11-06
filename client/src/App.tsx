@@ -10,18 +10,23 @@ import Logo from './assets/SEaglePathways-04.png';
 function App(): ReactElement {
   return (
     <>
+        {/* Setup React Router */}
         <BrowserRouter>
+            {/* Setup navigation bar */}
             <nav className='nav'>   
                 <Link to={"/"} className="nav__logo"><img alt="SEaglePathways" src={Logo} className="logo"/></Link>
                 <Link to={"/"} className='nav__reviews'>Reviews</Link>
                 <Link to={"/login"} className='nav__login'>Login</Link>
-                {/* <Link to={"/register"} className='nav__register'>Register</Link> */}
             </nav>
+
+            {/* Setup routes */}
             <Routes>
                 <Route path='/' element={<Review />}/>
                 <Route path='/login' element={<Login />}/>
-                {/* <Route path='/register' element={<Register />}/> */}
+                <Route path='/register' element={<Register />}/>
             </Routes>
+                
+            {/* Setup footer */}
             <footer>
                 SEaglePathways
             </footer>
