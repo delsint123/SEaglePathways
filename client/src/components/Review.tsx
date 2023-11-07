@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button} from 'antd';
+import {Button, notification} from 'antd';
 import '../styling/Review.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
@@ -9,6 +9,8 @@ export default function Review(): ReactElement {
     //initialize state
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
+
+    const [notificationApi, contextHolder] = notification.useNotification();
 
     //toggle review modal
     const toggleReviewModal = (): void => {
@@ -21,11 +23,20 @@ export default function Review(): ReactElement {
             baseURL: 'http://localhost:5000'
         })
 
-        const res = await instance.get('/review/allReviews');
-
-        //save the review data into state
-        const reviews = [...res.data] as IReviewViewModel[];
-        setReviews(reviews);
+        await instance.get('/review/allReviews')
+            .then((res) => {
+                //save the review data into state
+                const reviews = [...res.data] as IReviewViewModel[];
+                setReviews(reviews);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                    duration: 60
+                });
+            });
     }
 
     //refresh the review data when the modal opens and closes
@@ -49,6 +60,7 @@ export default function Review(): ReactElement {
 
     return (
         <>
+            {contextHolder}
             {/* Render review elements */}
             <div className='review__container'>
                 <Button onClick={toggleReviewModal}>Add a Review</Button>

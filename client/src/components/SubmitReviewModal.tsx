@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
-import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button} from 'antd';
+import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button, notification} from 'antd';
 import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
@@ -18,7 +18,9 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     //initialize state
     const [companies, setCompanies] = React.useState<ICompany[]>([]);
     const [newCompany, setNewCompany] = React.useState<string>("");
+
     const [form] = Form.useForm();
+    const [notificationApi, contextHolder] = notification.useNotification();
 
     //create an axios instance
     const instance = axios.create({
@@ -38,33 +40,66 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         } as IReview;
 
         //post the review to the server
-        const res = await instance.post<IReview, AxiosResponse>('/review/submit', {review});
-        
-        //Close the modal and reset form fields
-        props.setIsModalOpen(false);
-        form.resetFields();
-        
-        //Return the response data
-        return res.data;
+        await instance.post<IReview, AxiosResponse>('/review/submit', {review})
+            .then((res) => {
+                //Close the modal and reset form fields
+                props.setIsModalOpen(false);
+                form.resetFields();                
+                
+                notificationApi.success({
+                    message: 'Review Submitted',
+                    description: 'Your review has been submitted successfully!',
+                    placement: 'bottomRight',
+                });
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            }
+        );
     }
 
     //get all companies from the server
     const getCompaniesAsync = async (): Promise<void> => {
-        const res = await instance.get('/company/allCompanies');
-
-        //update state with data retrieved from server
-        const companies = [...res.data] as ICompany[];
-        setCompanies(companies);
+        await instance.get('/company/allCompanies')
+            .then((res) => {
+                //update state with data retrieved from server
+                const companies = [...res.data] as ICompany[];
+                setCompanies(companies);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
     }
 
     //Add a company to the database
     const addCompany = async (company: string): Promise<void> => {
-        const res = await instance.post<string, AxiosResponse>('/company/add', {company});
+        await instance.post<string, AxiosResponse>('/company/add', {company})
+            .then((res) => {
+                //clear new company state and get companies from server
+                setNewCompany('');
+                getCompaniesAsync();
 
-        //clear new company state and get companies from server
-        setNewCompany('');
-        getCompaniesAsync();
-        return res.data;
+                notificationApi.success({
+                    message: 'Company Added',
+                    description: 'Your company has been added successfully!',
+                    placement: 'bottomRight',
+                });
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
     }
 
     const handleCancel = () => {
@@ -107,6 +142,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     return (
         <>
+            {contextHolder}
             {/*Uses modal component retrieved from AntDesign*/}
             <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
                 {/*Uses form, form.item, and select components retrieved from AntDesign*/}
@@ -185,7 +221,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         rules={[
                             {
                             required: true,
-                            message: 'Please input the title of your review!',
+                            message: 'Please input the dates!',
                             },
                         ]}
                     >

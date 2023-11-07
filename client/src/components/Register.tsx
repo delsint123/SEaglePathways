@@ -1,5 +1,5 @@
 import React, {ReactElement} from 'react';
-import {Button, Form, Input} from 'antd';
+import {Button, Form, Input, notification} from 'antd';
 import IUserRequestModel from '../../../server/models/userRequestModel';
 import '../styling/Register.css';
 import axios, { AxiosResponse } from 'axios';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Register(): ReactElement {
     //used to navigate to another route
     const navigate = useNavigate();
+    const [notificationApi, contextHolder] = notification.useNotification();
 
     //create an axios instance
     const instance = axios.create({
@@ -16,15 +17,25 @@ export default function Register(): ReactElement {
 
     //submits/registers a user to the server asynchronously
     const submitUserAsync = async (user: IUserRequestModel) => {
-        const res = await instance.post<IUserRequestModel, AxiosResponse>('/user/register', {user});
-
-        //TODO:redirect to account page if successful
-        //checks if the response is successful and redirects to the home page
-        if (res.status === 200) {
-            navigate('/');
-        }
-        
-        return res.data;
+        await instance.post<IUserRequestModel, AxiosResponse>('/user/register', {user})
+            .then((res) => {
+                notificationApi.success({
+                    message: 'Account Created',
+                    description: 'Your account has been registered successfully, Please log in!',
+                    placement: 'bottomRight',
+                });
+                
+                //TODO:redirect to account page if successful
+                //checks if the response is successful and redirects to the home page
+                setTimeout(() => navigate('/login'), 3000);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
     };
 
     const onFinishFailed = (errorInfo: any) => {
@@ -33,6 +44,7 @@ export default function Register(): ReactElement {
 
     return (
         <>
+            {contextHolder}
             {/*Uses form, button, and input components retrieved from AntDesign*/}
             <Form
                 name="register"
