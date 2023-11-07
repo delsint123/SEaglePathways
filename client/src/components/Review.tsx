@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button, notification} from 'antd';
+import {Button, Tooltip, notification} from 'antd';
 import '../styling/Review.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
@@ -11,6 +11,8 @@ export default function Review(): ReactElement {
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
 
     const [notificationApi, contextHolder] = notification.useNotification();
+
+    const isUserLoggedOut = sessionStorage.getItem('user') == null;
 
     //toggle review modal
     const toggleReviewModal = (): void => {
@@ -63,7 +65,19 @@ export default function Review(): ReactElement {
             {contextHolder}
             {/* Render review elements */}
             <div className='review__container'>
-                <Button onClick={toggleReviewModal}>Add a Review</Button>
+                {isUserLoggedOut && 
+                    <Tooltip placement='top' title='You are not logged in! Please log in to submit a review'>
+                        <Button disabled={isUserLoggedOut}>
+                            Add a Review
+                        </Button>
+                    </Tooltip>
+                }
+                {!isUserLoggedOut &&
+                    <Button onClick={toggleReviewModal}>
+                        Add a Review
+                    </Button>
+                }
+                
                 {reviewElements}
             </div>
 

@@ -153,7 +153,8 @@ async function getReviewsAsync(response: Response): Promise<void> {
 }
 
 function validateReview(review: IReview): boolean {
-    if(review.title == null 
+    if(review.userId == null
+        || review.title == null 
         || review.company == null 
         || review.description == null 
         || review.startDate == null 
