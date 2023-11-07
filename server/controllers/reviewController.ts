@@ -17,7 +17,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
     try {
         validateReview(review);
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -28,7 +28,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
     try {
         currCompany = await retrieveCompanyForReviewAsync(review.company);
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -67,7 +67,7 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
     }
 }
@@ -87,7 +87,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -105,7 +105,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
             companies = companyRes[0];
         }
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -145,7 +145,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
         }
         
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }

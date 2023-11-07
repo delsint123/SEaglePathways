@@ -12,7 +12,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -29,7 +29,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -54,7 +54,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
     }
 }
@@ -72,7 +72,7 @@ async function getAllCompaniesAsync(response: Response): Promise<void> {
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
     }
 }
