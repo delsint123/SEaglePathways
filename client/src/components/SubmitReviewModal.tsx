@@ -29,20 +29,31 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     //submits a review to a server asynchronously
     const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
+        const sessionUserId = sessionStorage.getItem('user');
+        
         const review = {
+            userId: sessionUserId ? parseInt(sessionUserId) : null,
             title: request.title,
             company: request.company,
             description: request.description,
-            //convert the dates to a date object
             startDate: request.datesAttended[0].toDate(),
             endDate: request.datesAttended[1].toDate(),
-            gradeLevel: request.gradeLevel
+            gradeLevel: request.gradeLevel, 
         } as IReview;
+
+        if (review.userId === null) { 
+            notificationApi.error({
+                message: 'Error',
+                description: "You are not logged in! Can not submit review!",
+                placement: 'bottomRight',
+            });
+
+            return;
+        }
 
         //post the review to the server
         await instance.post<IReview, AxiosResponse>('/review/submit', {review})
             .then((res) => {
-                //Close the modal and reset form fields
                 props.setIsModalOpen(false);
                 form.resetFields();                
                 
