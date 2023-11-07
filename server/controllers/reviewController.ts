@@ -18,6 +18,8 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
         validateReview(review);
     } catch (error) {
         response.status(500).send(error);
+        console.log(error);
+        return;
     }
 
     //find companyId
@@ -27,6 +29,8 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
         currCompany = await retrieveCompanyForReviewAsync(review.company);
     } catch (error) {
         response.status(500).send(error);
+        console.log(error);
+        return;
     }
     
     //add review
@@ -58,10 +62,13 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
                 reviewId: res.insertId,
                 ...review
             } as IReview);
+            
+            console.log("Review submission complete!");
         }
 
     } catch (error) {
         response.status(500).send(error);
+        console.log(error);
     }
 }
 
@@ -81,6 +88,8 @@ async function getReviewsAsync(response: Response): Promise<void> {
 
     } catch (error) {
         response.status(500).send(error);
+        console.log(error);
+        return;
     }
 
     //get company name
@@ -97,39 +106,50 @@ async function getReviewsAsync(response: Response): Promise<void> {
         }
     } catch (error) {
         response.status(500).send(error);
+        console.log(error);
+        return;
     }
 
-    const reviewsWithCompany = reviews.map(review => {
-        const companyForReview = companies.find(comp => comp.companyId === review.companyId);
+    try {
+        const reviewsWithCompany = reviews.map(review => {
+            const companyForReview = companies.find(comp => comp.companyId === review.companyId);
 
-        if(companyForReview) {
-            return {
-                reviewId: review.reviewId,
-                title: review.title, 
-                company: companyForReview.name,
-                description: review.description, 
-                startDate: review.startDate,
-                endDate: review.endDate,
-                gradeLevel: review.gradeLevel,
-            } as IReviewViewModel;
-        }
-        else {
-            return {
-                reviewId: review.reviewId,
-                title: review.title, 
-                description: review.description, 
-                startDate: review.startDate,
-                endDate: review.endDate,
-                gradeLevel: review.gradeLevel,
-            } as IReviewViewModel;
-        }
-    })
+            if(companyForReview) {
+                return {
+                    reviewId: review.reviewId,
+                    title: review.title, 
+                    company: companyForReview.name,
+                    description: review.description, 
+                    startDate: review.startDate,
+                    endDate: review.endDate,
+                    gradeLevel: review.gradeLevel,
+                } as IReviewViewModel;
+            }
+            else {
+                return {
+                    reviewId: review.reviewId,
+                    title: review.title, 
+                    description: review.description, 
+                    startDate: review.startDate,
+                    endDate: review.endDate,
+                    gradeLevel: review.gradeLevel,
+                } as IReviewViewModel;
+            }
+        })
 
-    if(reviews.length) {
-        response.status(200).json(reviewsWithCompany);
-    } else {
-        response.status(500).send('An error while processing the retrieved reviews.');
+        if(reviews.length) {
+            response.status(200).json(reviewsWithCompany);
+            console.log("Reviews retrieval complete!");
+        } else {
+            throw new Error('An error while processing the retrieved reviews.');
+        }
+        
+    } catch (error) {
+        response.status(500).send(error);
+        console.log(error);
+        return;
     }
+
 }
 
 function validateReview(review: IReview): boolean {
