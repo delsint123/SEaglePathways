@@ -19,7 +19,7 @@ async function registerAsync(request: Request, response: Response): Promise<void
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
         return;
     }
@@ -45,7 +45,7 @@ async function registerAsync(request: Request, response: Response): Promise<void
         }
         
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error);
     }
 
@@ -77,7 +77,7 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
         }
 
     } catch (error) {
-        response.status(500).send(error);
+        response.status(500).json({'error': (error as Error).message});
         console.log(error); 
     }
 }
