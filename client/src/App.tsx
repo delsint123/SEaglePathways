@@ -1,7 +1,7 @@
 import React, {ReactElement} from 'react';
 import ReactDOM from 'react-dom/client';
 import {BrowserRouter, Route, Routes, Link} from 'react-router-dom';
-import Review from './components/Review.tsx';
+import Review from './components/ReviewQueue.tsx';
 import Login from './components/Login.tsx';
 import Register from './components/Register.tsx';
 import './App.css';
@@ -27,8 +27,8 @@ function App(): ReactElement {
             </Routes>
                 
             {/* Setup footer */}
-            <footer>
-                SEaglePathways
+            <footer className='footer'>
+                <Link to={"/"}><img alt="SEaglePathways" src={Logo} className="footer__logo"/></Link>
             </footer>
         </BrowserRouter>
     </>
