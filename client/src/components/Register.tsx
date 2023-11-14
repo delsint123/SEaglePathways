@@ -2,7 +2,6 @@ import React, {ReactElement} from 'react';
 import {Button, Form, Input, notification} from 'antd';
 import IUserRequestModel from '../../../server/models/userRequestModel';
 import '../styling/Register.css';
-import '../App.css';
 import axios, { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 

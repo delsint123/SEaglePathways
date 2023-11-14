@@ -1,20 +1,26 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider} from 'antd';
 import '../styling/ReviewQueue.css';
-import '../App.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
+import IQueueReviewRequest from '../../../server/models/queueReviewRequestModel';
 
 export default function Review(): ReactElement {
     //initialize state
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
+    const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     const [notificationApi, contextHolder] = notification.useNotification();
     const { Paragraph, Text } = Typography;
 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
+
+    const instance = axios.create({
+        baseURL: 'http://localhost:5000'
+    })
 
     //toggle review modal
     const toggleReviewModal = (): void => {
@@ -23,11 +29,12 @@ export default function Review(): ReactElement {
 
     //retrieve all reviews from the server
     const getReviews = async (): Promise<void> => {
-        const instance = axios.create({
-            baseURL: 'http://localhost:5000'
-        })
+        const queueRequest = {
+            page: currentPage,
+            limit: 15
+        } as IQueueReviewRequest;
 
-        await instance.get('/review/allReviews')
+        await instance.post<IQueueReviewRequest, AxiosResponse>('/review/queueReviews', {queueRequest})
             .then((res) => {
                 //save the review data into state
                 const reviews = [...res.data] as IReviewViewModel[];
@@ -43,10 +50,31 @@ export default function Review(): ReactElement {
             });
     }
 
+    const getTotalReviewCount = async (): Promise<void> => {
+        await instance.get('/review/totalReviewCount')
+            .then((res) => {
+                const reviewCount = res.data.count;
+                setTotalReviewCount(reviewCount);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                    duration: 60
+                });
+            });
+    }
+
     //refresh the review data when the modal opens and closes
     useEffect(() => {
         getReviews();
+        getTotalReviewCount();
     }, [isModalOpen]);
+
+    useEffect(() => {
+        getReviews();
+    }, [currentPage]);
 
     return (
         <div className='content'>
@@ -68,7 +96,6 @@ export default function Review(): ReactElement {
                 }
             </div>
 
-
             <div className='review__container'>
                 <List
                     grid={{ gutter: 16, column: 3}}
@@ -80,7 +107,6 @@ export default function Review(): ReactElement {
                                 className='review' 
                                 title={review.title}
                             >
-
                                 <div className='review__companyDateContainer'>
                                     <Text className='review__company'>{review.company}</Text>
 
@@ -104,12 +130,14 @@ export default function Review(): ReactElement {
                 />
             </div>
             
-                <Pagination 
-                    total={reviews.length}
-                    showTotal={(total) => `${total} Total reviews`}
-                    defaultPageSize={15}
-                    className='review__pagination'
-                />
+            <Pagination 
+                current={currentPage}
+                total={totalReviewCount}
+                showTotal={(total) => `${total} Total reviews`}
+                defaultPageSize={15}
+                onChange={(page) => setCurrentPage(page)}
+                className='review__pagination'
+            />
 
             {/* Render modal */}
             <SubmitReviewModal 

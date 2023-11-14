@@ -11,4 +11,12 @@ router.get('/allReviews', async (req: Request, res: Response) =>
     await reviewController.getReviewsAsync(res)
 );
 
+router.post('/queueReviews', async (req: Request, res: Response) =>
+    await reviewController.getQueueReviewsAsync(req, res)
+);
+
+router.get('/totalReviewCount', async (req: Request, res: Response) =>
+    await reviewController.getReviewCountAsync(res)
+);
+
 export default router;
