@@ -252,6 +252,83 @@ async function getReviewCountAsync(response: Response): Promise<void> {
     }
 }
 
+async function getReviewByIdAsync(request: Request, response: Response): Promise<void> {
+    const reviewId = request.params.reviewId;
+
+    let review: RowDataPacket[] = [];
+    try {
+        const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review WHERE reviewId = ?`, [reviewId]);
+
+        if(!reviewRes[0].length) {
+            throw new Error('Reviews could not be retrieved. Please try again.');
+        } 
+        else {
+            review = reviewRes[0];
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //get company name
+    let company: RowDataPacket[] = [];
+
+    try {
+        const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company WHERE companyId = ?`, [review[0].companyId]);
+
+        if(!companyRes) {
+            throw new Error('The companies could not be retrieved');
+        }
+        else {
+            company = companyRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    try {
+        let completeReview;
+        if(company) {
+            completeReview = {
+                reviewId: review[0].reviewId,
+                title: review[0].title, 
+                company: company[0].name,
+                description: review[0].description, 
+                startDate: review[0].startDate,
+                endDate: review[0].endDate,
+                gradeLevel: review[0].gradeLevel,
+            } as IReviewViewModel;
+        }
+        else {
+            completeReview = {
+                reviewId: review[0].reviewId,
+                title: review[0].title, 
+                description: review[0].description, 
+                startDate: review[0].startDate,
+                endDate: review[0].endDate,
+                gradeLevel: review[0].gradeLevel,
+            } as IReviewViewModel;
+        }
+
+
+        if(completeReview) {
+            response.status(200).json(completeReview);
+            console.log("Review by Id retrieval complete!");
+        } else {
+            throw new Error('An error while processing the retrieved reviews.');
+        }
+        
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+}
+
 //-----------------------------------------------------------------------------------
 //helper functions
 
@@ -289,5 +366,6 @@ export default {
     submitReviewAsync, 
     getReviewsAsync,
     getQueueReviewsAsync,
-    getReviewCountAsync
+    getReviewCountAsync, 
+    getReviewByIdAsync
 }

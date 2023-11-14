@@ -5,14 +5,16 @@ import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
 import IQueueReviewRequest from '../../../server/models/queueReviewRequestModel';
+import { useNavigate } from 'react-router-dom';
 
-export default function Review(): ReactElement {
+export default function ReviewQueue(): ReactElement {
     //initialize state
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
     const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
+    const navigate = useNavigate();
     const [notificationApi, contextHolder] = notification.useNotification();
     const { Paragraph, Text } = Typography;
 
@@ -66,6 +68,10 @@ export default function Review(): ReactElement {
             });
     }
 
+    const navigateToReview = (reviewId: number): void => {
+        navigate(`/review/${reviewId}`);
+    }
+
     //refresh the review data when the modal opens and closes
     useEffect(() => {
         getReviews();
@@ -106,13 +112,14 @@ export default function Review(): ReactElement {
                                 headStyle={{ fontSize:"20px" }} 
                                 className='review' 
                                 title={review.title}
+                                onClick={() => navigateToReview(review.reviewId)}
                             >
                                 <div className='review__companyDateContainer'>
                                     <Text className='review__company'>{review.company}</Text>
 
                                     <br />
                                     
-                                    <Text italic={true} className='review__date'>
+                                    <Text italic={true}>
                                         {`${review.startDate.slice(0, 10)} ~ ${review.endDate.slice(0, 10)}`}
                                     </Text>
                                 </div>

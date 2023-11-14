@@ -19,4 +19,8 @@ router.get('/totalReviewCount', async (req: Request, res: Response) =>
     await reviewController.getReviewCountAsync(res)
 );
 
+router.get('/:reviewId', async (req: Request, res: Response) =>
+    await reviewController.getReviewByIdAsync(req, res)
+);
+
 export default router;
