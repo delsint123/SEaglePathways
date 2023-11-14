@@ -1,5 +1,5 @@
 export default interface IReviewViewModel {
-    reviewId?: number,
+    reviewId: number,
     userId: number,
     title: string, 
     company: string,
