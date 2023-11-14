@@ -6,6 +6,7 @@ import dateFormat from 'dateformat';
 import tagController from './tagController';
 import { Request, Response } from 'express';
 import ICompany from '../models/companyModel';
+import IQueueReviewRequest from '../models/queueReviewRequestModel';
 
 async function submitReviewAsync(data: Request, response: Response): Promise<void> {
 
@@ -149,8 +150,110 @@ async function getReviewsAsync(response: Response): Promise<void> {
         console.log(error);
         return;
     }
-
 }
+
+async function getQueueReviewsAsync(data: Request, response: Response): Promise<void> {
+    const queueRequest = {...data.body.queueRequest} as IQueueReviewRequest;
+
+    const offset = (queueRequest.page - 1) * queueRequest.limit;
+
+    //retrieve reviews
+    let reviews: RowDataPacket[] = [];
+
+    try {
+        const reviewRes = await db.query<RowDataPacket[]>(`SELECT * FROM review LIMIT ?, ?`, [offset, queueRequest.limit]);
+
+        if(!reviewRes[0].length) {
+            throw new Error('Reviews could not be retrieved. Please try again.');
+        } 
+        else {
+            reviews = reviewRes[0];
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }    
+    
+    //get company name
+    let companies: RowDataPacket[] = [];
+
+    try {
+        const companyRes = await db.query<RowDataPacket[]>(`SELECT * FROM company`);
+
+        if(!companyRes) {
+            throw new Error('The companies could not be retrieved');
+        }
+        else {
+            companies = companyRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    try {
+        const reviewsWithCompany = reviews.map(review => {
+            const companyForReview = companies.find(comp => comp.companyId === review.companyId);
+
+            if(companyForReview) {
+                return {
+                    reviewId: review.reviewId,
+                    title: review.title, 
+                    company: companyForReview.name,
+                    description: review.description, 
+                    startDate: review.startDate,
+                    endDate: review.endDate,
+                    gradeLevel: review.gradeLevel,
+                } as IReviewViewModel;
+            }
+            else {
+                return {
+                    reviewId: review.reviewId,
+                    title: review.title, 
+                    description: review.description, 
+                    startDate: review.startDate,
+                    endDate: review.endDate,
+                    gradeLevel: review.gradeLevel,
+                } as IReviewViewModel;
+            }
+        })
+
+        if(reviews.length) {
+            response.status(200).json(reviewsWithCompany);
+            console.log("Reviews retrieval complete!");
+        } else {
+            throw new Error('An error while processing the retrieved reviews.');
+        }
+        
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+}
+
+async function getReviewCountAsync(response: Response): Promise<void> {
+    try {
+        const reviewResCount = await db.query<RowDataPacket[]>(`SELECT COUNT(*) as count FROM review`);
+        
+        if(!reviewResCount) {
+            throw new Error('Review count could not be retrieved. Please try again.');
+        } 
+
+        response.status(200).json(reviewResCount[0][0]);
+        console.log("Review Count retrieval complete!")
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
+//-----------------------------------------------------------------------------------
+//helper functions
 
 function validateReview(review: IReview): boolean {
     if(review.userId == null
@@ -180,7 +283,11 @@ async function retrieveCompanyForReviewAsync(reqCompany: string): Promise<ICompa
     } as ICompany;
 }
 
+//-----------------------------------------------------------------------------------
+
 export default {
     submitReviewAsync, 
-    getReviewsAsync
+    getReviewsAsync,
+    getQueueReviewsAsync,
+    getReviewCountAsync
 }

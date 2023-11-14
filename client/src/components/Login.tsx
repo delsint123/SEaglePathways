@@ -2,7 +2,6 @@ import React, {ReactElement} from 'react';
 import {Button, Form, Input, notification} from 'antd';
 import {Link, useNavigate} from 'react-router-dom';
 import '../styling/Login.css';
-import '../App.css';
 import axios, { AxiosResponse } from 'axios';
 import IUserLoginModel from '../../../server/models/userLoginModel';
 
