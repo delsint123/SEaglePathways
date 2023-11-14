@@ -1,0 +1,63 @@
+.review {
+    display: flex;
+    flex-direction: column;
+    min-height: 270.422px;
+}
+
+.review:hover {
+    border-color:  rgba(1, 121, 76, 0.4);
+    box-shadow: 1px 1px 1px 1px rgba(1, 121, 76, 0.2);
+}
+
+.review__editMenu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.review__title {
+    text-align: left;
+    margin: 0px;
+}
+
+.review__date {
+
+}
+
+.review__companyDateContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.review__company, .review__grade {
+    font-size: 16px;
+    color: rgba(0, 71, 133);
+}
+
+.review__company {
+    font-size: 18px;
+}
+
+.review__grade {
+    color: rgba(1, 121, 76);
+}
+
+.review__description {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    height: 30%;
+    margin: 0px;
+    white-space: nowrap;
+}
+
+.review__container {
+    margin: 20px 80px;
+}
+
+.review__pagination {
+    display: flex;
+    justify-content: center;
+}
+

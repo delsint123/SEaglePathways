@@ -1,6 +1,7 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button, Tooltip, notification} from 'antd';
-import '../styling/Review.css';
+import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider} from 'antd';
+import '../styling/ReviewQueue.css';
+import '../App.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
@@ -11,6 +12,7 @@ export default function Review(): ReactElement {
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
 
     const [notificationApi, contextHolder] = notification.useNotification();
+    const { Paragraph, Text } = Typography;
 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
 
@@ -46,25 +48,12 @@ export default function Review(): ReactElement {
         getReviews();
     }, [isModalOpen]);
 
-    //create a review element for each review
-    const reviewElements = reviews.map((review) => {
-        return (
-            <div className='review'>
-                <h1 className='title'>{review.title}</h1>
-                <h2>{review.company}</h2>
-                <h2>{review.gradeLevel}</h2>
-                <h3>{review.startDate}</h3>
-                <h3>{review.endDate}</h3>
-                <p>{review.description}</p>
-            </div>
-        )
-    });
-
     return (
-        <>
+        <div className='content'>
             {contextHolder}
             {/* Render review elements */}
-            <div className='review__container'>
+
+            <div className='review__editMenu'>
                 {isUserLoggedOut && 
                     <Tooltip placement='top' title='You are not logged in! Please log in to submit a review'>
                         <Button disabled={isUserLoggedOut}>
@@ -77,16 +66,57 @@ export default function Review(): ReactElement {
                         Add a Review
                     </Button>
                 }
-                
-                {reviewElements}
             </div>
+
+
+            <div className='review__container'>
+                <List
+                    grid={{ gutter: 16, column: 3}}
+                    dataSource={reviews}
+                    renderItem={review => (
+                        <List.Item>
+                            <Card 
+                                headStyle={{ fontSize:"20px" }} 
+                                className='review' 
+                                title={review.title}
+                            >
+
+                                <div className='review__companyDateContainer'>
+                                    <Text className='review__company'>{review.company}</Text>
+
+                                    <br />
+                                    
+                                    <Text italic={true} className='review__date'>
+                                        {`${review.startDate.slice(0, 10)} ~ ${review.endDate.slice(0, 10)}`}
+                                    </Text>
+                                </div>
+
+                                <Divider orientation='right' orientationMargin="0px" style={{ color:"rgba(1, 121, 76)" }}>
+                                    {review.gradeLevel}
+                                </Divider>
+
+                                <Paragraph ellipsis={{rows:3}} style={{ marginBottom:"0px" }}>
+                                    {review.description}
+                                </Paragraph>
+                            </Card>
+                        </List.Item>
+                    )}
+                />
+            </div>
+            
+                <Pagination 
+                    total={reviews.length}
+                    showTotal={(total) => `${total} Total reviews`}
+                    defaultPageSize={15}
+                    className='review__pagination'
+                />
 
             {/* Render modal */}
             <SubmitReviewModal 
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
             />
-        </>
+        </div>
     );
 }
 

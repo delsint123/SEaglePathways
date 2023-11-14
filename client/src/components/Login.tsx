@@ -2,6 +2,7 @@ import React, {ReactElement} from 'react';
 import {Button, Form, Input, notification} from 'antd';
 import {Link, useNavigate} from 'react-router-dom';
 import '../styling/Login.css';
+import '../App.css';
 import axios, { AxiosResponse } from 'axios';
 import IUserLoginModel from '../../../server/models/userLoginModel';
 
@@ -45,7 +46,7 @@ export default function Login(): ReactElement {
     };
 
     return (
-        <div className='login__container'>
+        <div className='login__container content'>
             {contextHolder}
 
             <h1>Log In</h1>

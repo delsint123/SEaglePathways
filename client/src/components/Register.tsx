@@ -2,6 +2,7 @@ import React, {ReactElement} from 'react';
 import {Button, Form, Input, notification} from 'antd';
 import IUserRequestModel from '../../../server/models/userRequestModel';
 import '../styling/Register.css';
+import '../App.css';
 import axios, { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,7 +44,7 @@ export default function Register(): ReactElement {
     };
 
     return (
-        <>
+        <div className='content'>
             {contextHolder}
             {/*Uses form, button, and input components retrieved from AntDesign*/}
             <Form
@@ -112,6 +113,6 @@ export default function Register(): ReactElement {
                     </Button>
                 </Form.Item>
             </Form>
-        </>
+        </div>
     );
 }
