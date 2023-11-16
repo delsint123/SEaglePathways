@@ -1,3 +1,5 @@
+import ITag from "../models/tagModel";
+
 export default interface IReviewViewModel {
     reviewId: number,
     userId: number,
@@ -7,5 +9,5 @@ export default interface IReviewViewModel {
     startDate: string,
     endDate: string,
     gradeLevel: string,
-    tags: string[]
+    tags: ITag[]
 }

@@ -1,3 +1,5 @@
+import ITag from "./tagModel";
+
 export default interface IReview {
     reviewId?: number,
     userId: number,
@@ -7,5 +9,5 @@ export default interface IReview {
     startDate: Date,
     endDate: Date,
     gradeLevel: string,
-    tags: string[]
+    tagIds: number[]
 }

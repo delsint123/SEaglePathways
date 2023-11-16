@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import reviewRouter from './routes/reviewRoute';
 import userRouter from './routes/userRoute';
 import companyRouter from './routes/companyRoute';
+import tagRouter from './routes/tagRoute';
 import session from 'express-session';
 
 declare module 'express-session' {
@@ -39,6 +40,7 @@ app.use(session({
 app.use('/review', reviewRouter);
 app.use('/user', userRouter);
 app.use('/company', companyRouter);
+app.use('/tag', tagRouter);
 
 // Port server is listening on
 const PORT = process.env.PORT || 5000;
