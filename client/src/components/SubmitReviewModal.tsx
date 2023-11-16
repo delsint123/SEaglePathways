@@ -6,6 +6,7 @@ import IReview from '../../../server/models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
 import ICompany from '../../../server/models/companyModel';
+import ITag from '../../../server/models/tagModel';
 
 //Define the properties that this component expects
 interface SubmitReviewModalProps {
@@ -18,6 +19,9 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     //initialize state
     const [companies, setCompanies] = React.useState<ICompany[]>([]);
     const [newCompany, setNewCompany] = React.useState<string>("");
+    const [tags, setTags] = React.useState<ITag[]>([]);
+    const [newTag, setNewTag] = React.useState<ITag>({} as ITag);
+    const [currentTagIds, setCurrentTagIds] = React.useState<number[]>([]);
 
     const [form] = Form.useForm();
     const [notificationApi, contextHolder] = notification.useNotification();
@@ -39,6 +43,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             startDate: request.datesAttended[0].toDate(),
             endDate: request.datesAttended[1].toDate(),
             gradeLevel: request.gradeLevel, 
+            tagIds: currentTagIds
         } as IReview;
 
         if (review.userId === null) { 
@@ -90,6 +95,22 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             });
     }
 
+    const getTagsAsync = async (): Promise<void> => {
+        await instance.get('/tag/allTags')
+            .then((res) => {
+                //update state with data retrieved from server
+                const tags = [...res.data] as ITag[];
+                setTags(tags);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
+    }
+
     //Add a company to the database
     const addCompany = async (company: string): Promise<void> => {
         await instance.post<string, AxiosResponse>('/company/add', {company})
@@ -113,6 +134,28 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             });
     }
 
+    const addTag = async (tag: ITag): Promise<void> => {
+        await instance.post<string, AxiosResponse>('/tag/add', {tag})
+            .then((res) => {
+                //clear new company state and get companies from server
+                setNewTag({} as ITag);
+                getTagsAsync();
+
+                notificationApi.success({
+                    message: 'Tag Added',
+                    description: 'Your tag has been added successfully!',
+                    placement: 'bottomRight',
+                });
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
+    }
+
     const handleCancel = () => {
         //close form modal and reset form fields
         props.setIsModalOpen(false);
@@ -120,7 +163,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     };
 
     //custom filter for company select
-    const searchCompanyFilter = (input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    const searchFilter = (input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
     //define grade levels for select
     const gradeLevels = [
@@ -146,9 +189,9 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         },
     ];
 
-    //get all companies after component first renders
     useEffect(() => {
         getCompaniesAsync();
+        getTagsAsync();
     }, [])
 
     return (
@@ -166,7 +209,6 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     style={{ maxWidth: 600 }}
                     initialValues={{ remember: true }}
                     onFinish={submitReviewAsync}
-                    //onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
                     <Form.Item
@@ -195,24 +237,15 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         <Select
                             showSearch
                             placeholder="Select a company"
-                            filterOption={searchCompanyFilter}
+                            filterOption={searchFilter}
                             options={companies.map(company => ({key: company.companyId, value: company.name, label: company.name}))}
                             dropdownRender={(menu) => (
                                 <>
                                     {menu}
-                                    <Divider
-                                        style={{
-                                        margin: '8px 0',
-                                        }}
-                                    />
-                                    <Space
-                                        style={{
-                                        padding: '0 8px 4px',
-                                        }}
-                                    >
+                                    <Divider style={{ margin: '8px 0' }} />
+                                    <Space style={{ padding: '0 8px 4px' }}>
                                         <Input
                                             placeholder="Please enter item"
-                                            //ref={inputRef}
                                             value={newCompany}
                                             onChange={(e) => setNewCompany(e.target.value)}
                                             onKeyDown={(e) => e.stopPropagation()}
@@ -250,6 +283,46 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         ]}
                     >
                         <Input.TextArea />
+                    </Form.Item>
+
+                    <Form.Item label="Tags" name="tags">
+                        <Select
+                            mode='multiple'
+                            showSearch
+                            placeholder="Select tags"
+                            filterOption={searchFilter}
+                            onSelect={(value, option) => setCurrentTagIds((prevTagIds: number[]) => [...prevTagIds, option.key])}
+                            onDeselect={(value, option) => setCurrentTagIds((prevTagIds: number[]) => prevTagIds.filter((tagId: number) => tagId !== option.key))}
+                            options={tags.map(tag => ({key: tag.tagId as number, value: tag.name, label: tag.name}))}
+                            dropdownRender={(menu) => (
+                                <>
+                                    {menu}
+
+                                    <Divider style={{ margin: '8px 0' }} />
+                                    <Space style={{ padding: '0 8px 4px'}}>
+                                        <div style={{display: 'block'}}>
+                                            <Input
+                                                value={newTag.name}
+                                                onChange={(e) => setNewTag((prevTag: ITag) => ({ ...prevTag, name: e.target.value} as ITag))}
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                placeholder='Name'
+                                                style={{marginBottom: '8px'}}
+                                            />
+                                            <Input
+                                                value={newTag.description}
+                                                onChange={(e) => setNewTag((prevTag: ITag) => ({ ...prevTag, description: e.target.value} as ITag))}
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                placeholder='Description'
+                                            />
+                                        </div>
+                                        
+                                        <Button type="text" icon={<PlusOutlined />} onClick={() => addTag(newTag)}>
+                                            Add tag
+                                        </Button>
+                                    </Space>
+                                </>
+                              )}
+                        />
                     </Form.Item>
 
                     <Form.Item

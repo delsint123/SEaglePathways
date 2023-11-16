@@ -7,10 +7,9 @@ import tagController from './tagController';
 import { Request, Response } from 'express';
 import ICompany from '../models/companyModel';
 import IQueueReviewRequest from '../models/queueReviewRequestModel';
+import ITagReviewRequestViewModel from '../models/tagReviewRequestViewModel';
 
 async function submitReviewAsync(data: Request, response: Response): Promise<void> {
-
-    //TODO: add tags
     
     const review = {...data.body.review} as IReview;
 
@@ -33,8 +32,10 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
         console.log(error);
         return;
     }
-    
-    //add review
+
+    //add review        
+    let res: ResultSetHeader = {} as ResultSetHeader;
+
     try {
         const result = await db.query<ResultSetHeader>(
             `INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -49,8 +50,6 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
             ]
         )
 
-        let res: ResultSetHeader = {} as ResultSetHeader;
-
         if(!result) {
             throw new Error('Review could not be submitted. Please try again.');
         }
@@ -58,7 +57,22 @@ async function submitReviewAsync(data: Request, response: Response): Promise<voi
             res = result[0];
         }
 
-        if (res.affectedRows) {
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //add tags
+    try {
+        if (res.affectedRows) {    
+            const tagRequest = {
+                reviewId: res.insertId,
+                tagIds: review.tagIds
+            } as ITagReviewRequestViewModel; 
+
+            await tagController.addTagsToReviewAsync(tagRequest, response);
+
             response.status(200).json({
                 reviewId: res.insertId,
                 ...review
@@ -111,9 +125,28 @@ async function getReviewsAsync(response: Response): Promise<void> {
         return;
     }
 
+    //get all tags
+    let tags: RowDataPacket[] = [];
+
     try {
-        const reviewsWithCompany = reviews.map(review => {
+        const tagRes = await db.query<RowDataPacket[]>(`SELECT * FROM tag JOIN reviewTags rt ON rt.tagId = tag.tagId`);
+
+        if(!tagRes) {
+            throw new Error('The tags could not be retrieved');
+        }
+        else {
+            tags = tagRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }    
+
+    try {
+        const completeReview = reviews.map(async review => {
             const companyForReview = companies.find(comp => comp.companyId === review.companyId);
+            const tagsForReview = tags.filter(tag => tag.reviewId === review.reviewId);
 
             if(companyForReview) {
                 return {
@@ -124,6 +157,7 @@ async function getReviewsAsync(response: Response): Promise<void> {
                     startDate: review.startDate,
                     endDate: review.endDate,
                     gradeLevel: review.gradeLevel,
+                    tags: tagsForReview
                 } as IReviewViewModel;
             }
             else {
@@ -134,12 +168,13 @@ async function getReviewsAsync(response: Response): Promise<void> {
                     startDate: review.startDate,
                     endDate: review.endDate,
                     gradeLevel: review.gradeLevel,
+                    tags: tagsForReview
                 } as IReviewViewModel;
             }
         })
 
         if(reviews.length) {
-            response.status(200).json(reviewsWithCompany);
+            response.status(200).json(completeReview);
             console.log("Reviews retrieval complete!");
         } else {
             throw new Error('An error while processing the retrieved reviews.');
@@ -194,9 +229,28 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
         return;
     }
 
+    //get all tags
+    let tags: RowDataPacket[] = [];
+
     try {
-        const reviewsWithCompany = reviews.map(review => {
+        const tagRes = await db.query<RowDataPacket[]>(`SELECT * FROM tag JOIN reviewTags rt ON rt.tagId = tag.tagId`);
+
+        if(!tagRes) {
+            throw new Error('The tags could not be retrieved');
+        }
+        else {
+            tags = tagRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    try {
+        const completeReview = reviews.map(review => {
             const companyForReview = companies.find(comp => comp.companyId === review.companyId);
+            const tagsForReview = tags.filter(tag => tag.reviewId === review.reviewId);
 
             if(companyForReview) {
                 return {
@@ -207,6 +261,7 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
                     startDate: review.startDate,
                     endDate: review.endDate,
                     gradeLevel: review.gradeLevel,
+                    tags: tagsForReview
                 } as IReviewViewModel;
             }
             else {
@@ -217,12 +272,13 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
                     startDate: review.startDate,
                     endDate: review.endDate,
                     gradeLevel: review.gradeLevel,
+                    tags: tagsForReview
                 } as IReviewViewModel;
             }
         })
 
         if(reviews.length) {
-            response.status(200).json(reviewsWithCompany);
+            response.status(200).json(completeReview);
             console.log("Reviews retrieval complete!");
         } else {
             throw new Error('An error while processing the retrieved reviews.');
@@ -290,6 +346,29 @@ async function getReviewByIdAsync(request: Request, response: Response): Promise
         return;
     }
 
+    //get tags
+    let tags: RowDataPacket[] = [];
+    try {
+        const tagsRes = await db.query<RowDataPacket[]>(
+            `SELECT * FROM tag t
+            INNER JOIN reviewTags rt ON rt.tagId = t.tagId
+            WHERE rt.reviewId = ?`,
+            [reviewId]
+        );
+
+        if(!tagsRes) {
+            throw new Error('The companies could not be retrieved');
+        }
+        else {
+            tags = tagsRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+
     try {
         let completeReview;
         if(company) {
@@ -301,6 +380,7 @@ async function getReviewByIdAsync(request: Request, response: Response): Promise
                 startDate: review[0].startDate,
                 endDate: review[0].endDate,
                 gradeLevel: review[0].gradeLevel,
+                tags: tags
             } as IReviewViewModel;
         }
         else {
@@ -311,6 +391,7 @@ async function getReviewByIdAsync(request: Request, response: Response): Promise
                 startDate: review[0].startDate,
                 endDate: review[0].endDate,
                 gradeLevel: review[0].gradeLevel,
+                tags: tags
             } as IReviewViewModel;
         }
 

@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider} from 'antd';
+import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider, Tag} from 'antd';
 import '../styling/ReviewQueue.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
@@ -68,6 +68,14 @@ export default function ReviewQueue(): ReactElement {
             });
     }
 
+    const getTagsForDisplay = (review: IReviewViewModel): ReactElement[] => {
+        return review.tags.map((tag, index) => (
+            <Tooltip title={tag.description} placement='bottom'>
+                <Tag key={index}>{tag.name}</Tag>
+            </Tooltip>
+        ))
+    }
+
     const navigateToReview = (reviewId: number): void => {
         navigate(`/review/${reviewId}`);
     }
@@ -116,13 +124,11 @@ export default function ReviewQueue(): ReactElement {
                             >
                                 <div className='review__companyDateContainer'>
                                     <Text className='review__company'>{review.company}</Text>
-
                                     <br />
-                                    
-                                    <Text italic={true}>
-                                        {`${review.startDate.slice(0, 10)} ~ ${review.endDate.slice(0, 10)}`}
-                                    </Text>
+                                    <Text italic={true}>{`${review.startDate.slice(0, 10)} ~ ${review.endDate.slice(0, 10)}`}</Text>
                                 </div>
+
+                                {getTagsForDisplay(review)}
 
                                 <Divider orientation='right' orientationMargin="0px" style={{ color:"rgba(1, 121, 76)" }}>
                                     {review.gradeLevel}

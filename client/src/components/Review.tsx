@@ -1,9 +1,8 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {notification, Typography, Divider} from 'antd';
+import {notification, Typography, Divider, Tooltip, Tag} from 'antd';
 import '../styling/Review.css';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
-import IReview from '../../../server/models/reviewModel';
 import { useParams } from 'react-router-dom';
 
 export default function Review(): ReactElement {
@@ -35,16 +34,29 @@ export default function Review(): ReactElement {
                 });
             });
     }
-
+    
     useEffect(() => {
         getReview();
     }, []);
 
     return (
         <div className='content'>
+
+            {contextHolder}
+            
             <div className='reviewPg'>
                 <Title level={2}>{currentReview.title}</Title>
                 <Divider />
+
+                {currentReview.tags &&
+                    currentReview.tags.map((tag, index) => (
+                        <Tooltip title={tag.description} placement='top'>
+                            <Tag key={index}>{tag.name}</Tag>
+                        </Tooltip>
+                    ))
+                }
+
+                <br />
 
                 <Text>{currentReview.company}</Text>
                 <br />

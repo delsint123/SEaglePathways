@@ -1,5 +1,4 @@
 import React, {ReactElement} from 'react';
-import ReactDOM from 'react-dom/client';
 import {BrowserRouter, Route, Routes, Link} from 'react-router-dom';
 import ReviewQueue from './components/ReviewQueue.tsx';
 import Login from './components/Login.tsx';
@@ -8,7 +7,6 @@ import Review from './components/Review.tsx';
 
 import './App.css';
 import Logo from './assets/SEaglePathways-04.png';
-import IReview from '../../server/models/reviewModel.ts';
 
 function App(): ReactElement {
   return (
