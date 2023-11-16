@@ -1,14 +1,18 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider, Tag} from 'antd';
+import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider, Tag, Select} from 'antd';
 import '../styling/ReviewQueue.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
 import IQueueReviewRequest from '../../../server/models/queueReviewRequestModel';
 import { useNavigate } from 'react-router-dom';
+import ICompany from '../../../server/models/companyModel';
+import ITag from '../../../server/models/tagModel';
 
 export default function ReviewQueue(): ReactElement {
     //initialize state
+    const [companies, setCompanies] = React.useState<ICompany[]>([]);
+    const [tags, setTags] = React.useState<ITag[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
     const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
@@ -68,6 +72,39 @@ export default function ReviewQueue(): ReactElement {
             });
     }
 
+    //get all companies from the server
+    const getCompaniesAsync = async (): Promise<void> => {
+        await instance.get('/company/allCompanies')
+            .then((res) => {
+                //update state with data retrieved from server
+                const companies = [...res.data] as ICompany[];
+                setCompanies(companies);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
+    }
+
+    const getTagsAsync = async (): Promise<void> => {
+        await instance.get('/tag/allTags')
+            .then((res) => {
+                //update state with data retrieved from server
+                const tags = [...res.data] as ITag[];
+                setTags(tags);
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
+    }
+
     const getTagsForDisplay = (review: IReviewViewModel): ReactElement[] => {
         return review.tags.map((tag, index) => (
             <Tooltip title={tag.description} placement='bottom'>
@@ -108,6 +145,28 @@ export default function ReviewQueue(): ReactElement {
                         Add a Review
                     </Button>
                 }
+            
+                <Text style={{ marginLeft: "auto" }}>Filter By: </Text>
+
+                <Select 
+                    showSearch
+                    style={{ width: "150px", marginLeft: "10px", marginRight: "8px" }}
+                    placeholder="Company"
+                    optionFilterProp='children'
+                    filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                    filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
+                    options={companies.map(company => ({ value: company.companyId, label: company.name }))}
+                />
+
+                <Select 
+                    showSearch
+                    style={{ width: "150px" }}
+                    placeholder="Tags"
+                    optionFilterProp='children'
+                    filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                    filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
+                    options={tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
+                />
             </div>
 
             <div className='review__container'>
@@ -154,8 +213,12 @@ export default function ReviewQueue(): ReactElement {
 
             {/* Render modal */}
             <SubmitReviewModal 
+                companies={companies}
+                tags={tags}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
+                getCompaniesAsync={getCompaniesAsync}
+                getTagsAsync={getTagsAsync}
             />
         </div>
     );

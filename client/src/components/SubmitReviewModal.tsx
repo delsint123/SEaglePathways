@@ -10,16 +10,18 @@ import ITag from '../../../server/models/tagModel';
 
 //Define the properties that this component expects
 interface SubmitReviewModalProps {
+    companies: ICompany[],
+    tags: ITag[],
     isModalOpen: boolean, 
-    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    getCompaniesAsync: () => Promise<void>,
+    getTagsAsync: () => Promise<void>
 }
 
 //Define the functional component that represents
 export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactElement {
     //initialize state
-    const [companies, setCompanies] = React.useState<ICompany[]>([]);
     const [newCompany, setNewCompany] = React.useState<string>("");
-    const [tags, setTags] = React.useState<ITag[]>([]);
     const [newTag, setNewTag] = React.useState<ITag>({} as ITag);
     const [currentTagIds, setCurrentTagIds] = React.useState<number[]>([]);
 
@@ -78,46 +80,13 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         );
     }
 
-    //get all companies from the server
-    const getCompaniesAsync = async (): Promise<void> => {
-        await instance.get('/company/allCompanies')
-            .then((res) => {
-                //update state with data retrieved from server
-                const companies = [...res.data] as ICompany[];
-                setCompanies(companies);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
-    const getTagsAsync = async (): Promise<void> => {
-        await instance.get('/tag/allTags')
-            .then((res) => {
-                //update state with data retrieved from server
-                const tags = [...res.data] as ITag[];
-                setTags(tags);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
     //Add a company to the database
     const addCompany = async (company: string): Promise<void> => {
         await instance.post<string, AxiosResponse>('/company/add', {company})
             .then((res) => {
                 //clear new company state and get companies from server
                 setNewCompany('');
-                getCompaniesAsync();
+                props.getCompaniesAsync();
 
                 notificationApi.success({
                     message: 'Company Added',
@@ -139,7 +108,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             .then((res) => {
                 //clear new company state and get companies from server
                 setNewTag({} as ITag);
-                getTagsAsync();
+                props.getTagsAsync();
 
                 notificationApi.success({
                     message: 'Tag Added',
@@ -190,8 +159,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     ];
 
     useEffect(() => {
-        getCompaniesAsync();
-        getTagsAsync();
+        props.getCompaniesAsync();
+        props.getTagsAsync();
     }, [])
 
     return (
@@ -216,8 +185,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         name="title"
                         rules={[
                             {
-                            required: true,
-                            message: 'Please input the title of your review!',
+                                required: true,
+                                message: 'Please input the title of your review!',
                             },
                         ]}
                     >
@@ -229,8 +198,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         name="company"
                         rules={[
                             {
-                            required: true,
-                            message: 'Please input the company!',
+                                required: true,
+                                message: 'Please input the company!',
                             },
                         ]}
                     >
@@ -238,7 +207,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             showSearch
                             placeholder="Select a company"
                             filterOption={searchFilter}
-                            options={companies.map(company => ({key: company.companyId, value: company.name, label: company.name}))}
+                            options={props.companies.map(company => ({key: company.companyId, value: company.name, label: company.name}))}
                             dropdownRender={(menu) => (
                                 <>
                                     {menu}
@@ -264,8 +233,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         name="datesAttended"
                         rules={[
                             {
-                            required: true,
-                            message: 'Please input the dates!',
+                                required: true,
+                                message: 'Please input the dates!',
                             },
                         ]}
                     >
@@ -277,8 +246,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         name="description"
                         rules={[
                             {
-                            required: true,
-                            message: 'Please input the description!',
+                                required: true,
+                                message: 'Please input the description!',
                             },
                         ]}
                     >
@@ -293,7 +262,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             filterOption={searchFilter}
                             onSelect={(value, option) => setCurrentTagIds((prevTagIds: number[]) => [...prevTagIds, option.key])}
                             onDeselect={(value, option) => setCurrentTagIds((prevTagIds: number[]) => prevTagIds.filter((tagId: number) => tagId !== option.key))}
-                            options={tags.map(tag => ({key: tag.tagId as number, value: tag.name, label: tag.name}))}
+                            options={props.tags.map(tag => ({key: tag.tagId as number, value: tag.name, label: tag.name}))}
                             dropdownRender={(menu) => (
                                 <>
                                     {menu}
@@ -330,8 +299,8 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         name="gradeLevel"
                         rules={[
                             {
-                            required: true,
-                            message: 'Please input your grade level!',
+                                required: true,
+                                message: 'Please input your grade level!',
                             },
                         ]}
                     >
