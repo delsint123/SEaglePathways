@@ -75,7 +75,28 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
     }
 }
 
+async function logoutAsync(request: Request, response: Response): Promise<void> {
+    try {
+        request.session.userId = undefined;
+
+        if(request.session.userId != undefined) {
+            throw new Error('User could not be logged out');
+        }
+
+        response.status(200).json({
+            message: 'User logged out. Navigating Home...'
+        });
+
+        console.log("User logged out!");
+        
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
 export default {
     registerAsync,
-    loginAsync
+    loginAsync,
+    logoutAsync
 }

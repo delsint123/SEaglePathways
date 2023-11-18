@@ -11,4 +11,8 @@ router.post('/login', async (req: Request, res: Response) =>
     await userController.loginAsync(req, res)
 );
 
+router.get('/logout', async (req: Request, res: Response) => 
+    await userController.logoutAsync(req, res)
+);
+
 export default router;
