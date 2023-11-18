@@ -61,3 +61,26 @@
     justify-content: center;
 }
 
+.addReviewButton:hover {
+    color: rgba(0, 71, 133, 0.8) !important;
+    border-color: rgba(0, 71, 133, 0.8) !important;
+}
+
+.filterForm {
+    display: flex;
+    justify-content: center;
+    gap: 8px
+}
+
+.filterForm__item {
+    margin: 0px;
+}
+
+.filterForm__submit {
+    background-color: rgb(0, 71, 133);
+    box-shadow: 0 2px 0 rgba(1, 121, 76, 0.1);
+}
+
+.filterForm__submit:hover{
+    background-color: rgba(1, 121, 76) !important;
+}

@@ -11,16 +11,16 @@ router.get('/allReviews', async (req: Request, res: Response) =>
     await reviewController.getReviewsAsync(res)
 );
 
-router.post('/queueReviews', async (req: Request, res: Response) =>
-    await reviewController.getQueueReviewsAsync(req, res)
-);
-
-router.get('/totalReviewCount', async (req: Request, res: Response) =>
-    await reviewController.getReviewCountAsync(res)
+router.post('/totalReviewCount', async (req: Request, res: Response) =>
+    await reviewController.getReviewCountAsync(req, res)
 );
 
 router.get('/:reviewId', async (req: Request, res: Response) =>
     await reviewController.getReviewByIdAsync(req, res)
+);
+
+router.post('/queueReviewsWithFilters', async (req: Request, res: Response) =>
+    await reviewController.getQueueReviewsWithFiltersAsync(req, res)
 );
 
 export default router;

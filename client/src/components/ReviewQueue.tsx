@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider, Tag, Select} from 'antd';
+import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divider, Tag, Select, DatePicker, Form} from 'antd';
 import '../styling/ReviewQueue.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
@@ -8,6 +8,8 @@ import IQueueReviewRequest from '../../../server/models/queueReviewRequestModel'
 import { useNavigate } from 'react-router-dom';
 import ICompany from '../../../server/models/companyModel';
 import ITag from '../../../server/models/tagModel';
+import IReviewFilterRequest from '../../../server/models/reviewFilterRequestModel';
+import IReviewFilterViewModel from '../models/reviewFilterViewModel';
 
 export default function ReviewQueue(): ReactElement {
     //initialize state
@@ -17,8 +19,11 @@ export default function ReviewQueue(): ReactElement {
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
     const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [currentFilter, setCurrentFilter] = useState<string>('None');
+    const [queueFilters, setQueueFilters] = useState<IReviewFilterViewModel>();
 
     const navigate = useNavigate();
+    const [form] = Form.useForm();
     const [notificationApi, contextHolder] = notification.useNotification();
     const { Paragraph, Text } = Typography;
 
@@ -33,18 +38,52 @@ export default function ReviewQueue(): ReactElement {
         setIsModalOpen(prevIsModalOpen => !prevIsModalOpen);
     }
 
-    //retrieve all reviews from the server
-    const getReviews = async (): Promise<void> => {
-        const queueRequest = {
-            page: currentPage,
-            limit: 15
-        } as IQueueReviewRequest;
+    const getCurrentFilter = (): string => {
+        if(queueFilters?.companyId && queueFilters?.tagId && queueFilters?.startDate && queueFilters?.endDate) {
+            return 'Company, Tag, and Date';
+        }
+        if(queueFilters?.tagId && queueFilters?.startDate && queueFilters?.endDate) {
+            return 'Tag and Date';
+        }
+        if(queueFilters?.companyId && queueFilters?.startDate && queueFilters?.endDate) {
+            return 'Company and Date';
+        }
+        if(queueFilters?.companyId && queueFilters?.tagId) {
+            return 'Company and Tag';
+        }
+        if(queueFilters?.companyId) {
+            return 'Company';
+        }
+        if(queueFilters?.tagId) {
+            return 'Tag';
+        }
+        if(queueFilters?.startDate && queueFilters?.endDate) {
+            return 'Date';
+        }
+        
+        return 'None';
+    }
 
-        await instance.post<IQueueReviewRequest, AxiosResponse>('/review/queueReviews', {queueRequest})
+    //retrieve all reviews from the server
+    const generateReviewQueueWithFilters = async (): Promise<void> => {
+        const filterRequest = {
+            queue: {page: currentFilter === getCurrentFilter() ? currentPage : 1, limit: 15} as IQueueReviewRequest,
+            companyId: queueFilters?.companyId,
+            tagId: queueFilters?.tagId,
+            startDate: queueFilters?.startDate?.toDate(),
+            endDate: queueFilters?.endDate?.toDate()
+        } as IReviewFilterRequest;
+
+        await instance.post<IReviewFilterRequest, AxiosResponse>('/review/queueReviewsWithFilters', {filterRequest})
             .then((res) => {
-                //save the review data into state
                 const reviews = [...res.data] as IReviewViewModel[];
+
+                if(currentFilter !== getCurrentFilter()) {
+                    setCurrentPage(1);
+                }
+
                 setReviews(reviews);
+                setCurrentFilter(getCurrentFilter());
             })
             .catch((error) => {
                 notificationApi.error({
@@ -57,7 +96,15 @@ export default function ReviewQueue(): ReactElement {
     }
 
     const getTotalReviewCount = async (): Promise<void> => {
-        await instance.get('/review/totalReviewCount')
+        const filterRequest = {
+            queue: {page: currentFilter === getCurrentFilter() ? currentPage : 1, limit: 15} as IQueueReviewRequest,
+            companyId: queueFilters?.companyId,
+            tagId: queueFilters?.tagId,
+            startDate: queueFilters?.startDate?.toDate(),
+            endDate: queueFilters?.endDate?.toDate()
+        } as IReviewFilterRequest;
+
+        await instance.post('/review/totalReviewCount', {filterRequest})
             .then((res) => {
                 const reviewCount = res.data.count;
                 setTotalReviewCount(reviewCount);
@@ -119,13 +166,17 @@ export default function ReviewQueue(): ReactElement {
 
     //refresh the review data when the modal opens and closes
     useEffect(() => {
-        getReviews();
-        getTotalReviewCount();
+        generateReviewQueueWithFilters();
+        form.resetFields();
     }, [isModalOpen]);
 
     useEffect(() => {
-        getReviews();
+        generateReviewQueueWithFilters();
     }, [currentPage]);
+
+    useEffect(() => {
+        getTotalReviewCount();
+    }, [currentPage, currentFilter]);
 
     return (
         <div className='content'>
@@ -141,32 +192,62 @@ export default function ReviewQueue(): ReactElement {
                     </Tooltip>
                 }
                 {!isUserLoggedOut &&
-                    <Button onClick={toggleReviewModal}>
+                    <Button onClick={toggleReviewModal} className='addReviewButton'>
                         Add a Review
                     </Button>
                 }
             
                 <Text style={{ marginLeft: "auto" }}>Filter By: </Text>
 
-                <Select 
-                    showSearch
-                    style={{ width: "150px", marginLeft: "10px", marginRight: "8px" }}
-                    placeholder="Company"
-                    optionFilterProp='children'
-                    filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
-                    filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                    options={companies.map(company => ({ value: company.companyId, label: company.name }))}
-                />
-
-                <Select 
-                    showSearch
-                    style={{ width: "150px" }}
-                    placeholder="Tags"
-                    optionFilterProp='children'
-                    filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
-                    filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                    options={tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
-                />
+                <Form
+                    className='filterForm'
+                    name="filter"
+                    form={form}
+                    initialValues={{ remember: true }}
+                    onFinish={generateReviewQueueWithFilters}
+                    autoComplete="off"
+                >
+                    <Form.Item className='filterForm__item'>
+                        <Select 
+                            showSearch
+                            allowClear
+                            style={{ width: "150px", marginLeft: "10px"}}
+                            placeholder="Company"
+                            optionFilterProp='children'
+                            onSelect={(companyId) => setQueueFilters((prevFilters) => ({ ...prevFilters, companyId: companyId } as IReviewFilterViewModel)) }
+                            onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, companyId: undefined } as IReviewFilterViewModel))}
+                            filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                            filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
+                            options={companies.map(company => ({ value: company.companyId, label: company.name }))}
+                        />
+                    </Form.Item>
+                    <Form.Item className='filterForm__item'>
+                        <Select 
+                            showSearch
+                            allowClear
+                            style={{ width: "150px"}}
+                            placeholder="Tag"
+                            optionFilterProp='children'
+                            onSelect={(tagId) => setQueueFilters((prevFilters) => ({ ...prevFilters, tagId: tagId } as IReviewFilterViewModel)) }
+                            onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, tagId: undefined } as IReviewFilterViewModel)) }
+                            filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                            filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
+                            options={tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
+                        />
+                    </Form.Item>
+                    <Form.Item className='filterForm__item'>
+                        <DatePicker.RangePicker 
+                            style={{ width: "275px"}}
+                            onChange={(dates) => { setQueueFilters((prevFilters) => ({ ...prevFilters, startDate: dates?.[0], endDate: dates?.[1]} as IReviewFilterViewModel))}}
+                        />
+                    </Form.Item>
+                    <Form.Item className='filterForm__item'>
+                        <Button type="primary" htmlType="submit" className='filterForm__submit'>
+                            Generate
+                        </Button>
+                    </Form.Item>
+                </Form>
+                
             </div>
 
             <div className='review__container'>
