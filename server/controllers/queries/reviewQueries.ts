@@ -1,6 +1,20 @@
 const companies=`SELECT * FROM company;`
 const company=`SELECT * FROM company WHERE companyId=?;`
 const allTagsForReviews=`SELECT * FROM tag JOIN reviewTags rt ON rt.tagId = tag.tagId;`
+const tagsForAReview=`SELECT * FROM tag JOIN reviewTags rt ON rt.tagId = tag.tagId WHERE rt.reviewId = ?;`
+const allReviews=`
+    SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
+      FROM review as r
+           JOIN company as c on c.companyId = r.companyId;`
+const reviewById=`
+    SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
+      FROM review as r
+           JOIN company as c on c.companyId = r.companyId
+     WHERE r.reviewId = ?;`
+const addReview=`
+    INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+
 const queueReviews=`
     SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
       FROM review as r
@@ -130,6 +144,11 @@ export default {
     companies,
     company,
     allTagsForReviews,
+    tagsForAReview,
+    allReviews,
+    reviewById,
+    addReview,
+
     queueReviews,
 
     queueReviewsCompanyFilter,

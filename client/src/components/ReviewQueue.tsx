@@ -74,7 +74,7 @@ export default function ReviewQueue(): ReactElement {
             endDate: queueFilters?.endDate?.toDate()
         } as IReviewFilterRequest;
 
-        await instance.post<IReviewFilterRequest, AxiosResponse>('/review/queueReviewsWithFilters', {filterRequest})
+        await instance.post<IReviewFilterRequest, AxiosResponse>('/review/queueReviews', {filterRequest})
             .then((res) => {
                 const reviews = [...res.data] as IReviewViewModel[];
 

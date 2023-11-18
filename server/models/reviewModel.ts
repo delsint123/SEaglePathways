@@ -1,10 +1,8 @@
-import ITag from "./tagModel";
-
 export default interface IReview {
     reviewId?: number,
     userId: number,
     title: string, 
-    company: string,
+    companyId?: number,
     description: string, 
     startDate: Date,
     endDate: Date,

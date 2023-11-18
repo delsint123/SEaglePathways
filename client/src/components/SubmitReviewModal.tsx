@@ -36,11 +36,14 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     //submits a review to a server asynchronously
     const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
         const sessionUserId = sessionStorage.getItem('user');
+
+        const companyId = props.companies.find(comp => comp.name === request.company)?.companyId;
         
         const review = {
             userId: sessionUserId ? parseInt(sessionUserId) : null,
             title: request.title,
             company: request.company,
+            companyId: companyId,
             description: request.description,
             startDate: request.datesAttended[0].toDate(),
             endDate: request.datesAttended[1].toDate(),

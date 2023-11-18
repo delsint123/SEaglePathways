@@ -3,16 +3,14 @@ import db from '../database';
 import ITag from '../models/tagModel';
 import { Request, Response } from 'express';
 import ITagReviewRequestViewModel from '../models/tagReviewRequestViewModel';
+import queries from './queries/tagQueries';
 
 async function addTagAsync(data: Request, response: Response) {
 
     const tag = {...data.body.tag} as ITag;
     
     try {
-        const [result] = await db.query<ResultSetHeader>(
-            `INSERT INTO tag (name, description) VALUES (?, ?)`,
-            [tag.name, tag.description]
-        );
+        const [result] = await db.query<ResultSetHeader>(queries.addTag, [tag.name, tag.description]);
 
         if (result.affectedRows) {
             response.status(200).json({
@@ -34,9 +32,7 @@ async function addTagAsync(data: Request, response: Response) {
 
 async function getAllTagsAsync(response: Response) {
     try {
-        const [result] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM tag`
-        );
+        const [result] = await db.query<RowDataPacket[]>(queries.allTags);
 
         if(result) {
             response.status(200).json(result);
@@ -60,10 +56,7 @@ async function addTagsToReviewAsync(request: ITagReviewRequestViewModel, respons
 
     try {
         for (const tagId of tagIds) {
-            const [curRes] = await db.query<ResultSetHeader>(
-                `INSERT INTO reviewTags (reviewId, tagId) VALUES (?, ?)`,
-                [reviewId, tagId]
-            );
+            const [curRes] = await db.query<ResultSetHeader>(queries.addTagToReview, [reviewId, tagId]);
 
             if (curRes.affectedRows) {
                 result.push(tagId);
