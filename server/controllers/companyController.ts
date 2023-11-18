@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database';
 import ICompany from '../models/companyModel';
+import queries from './queries/companyQueries';
 
 async function addCompanyAsync(request: string, response: Response): Promise<void> {
 
@@ -19,10 +20,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
 
     //validation for duplicates; check if company already exists
     try {
-        const [currentCompanies] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM company WHERE name = ?`, 
-            [request]
-        )
+        const [currentCompanies] = await db.query<RowDataPacket[]>(queries.companyExists, [request])
 
         if(currentCompanies.length) {
             throw new Error('This company already exists, please search for it in the dropdown.');
@@ -36,10 +34,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
 
     //insert company
     try {
-        const [result] = await db.query<ResultSetHeader>(
-            `INSERT INTO company (name) VALUES (?)`,
-            [request]
-        )
+        const [result] = await db.query<ResultSetHeader>(queries.addCompany, [request])
     
         if (result.affectedRows) {
             response.status(200).json({
@@ -61,7 +56,7 @@ async function addCompanyAsync(request: string, response: Response): Promise<voi
 
 async function getAllCompaniesAsync(response: Response): Promise<void> {
     try {
-        const [companies] = await db.query<RowDataPacket[]>(`SELECT * FROM company`)
+        const [companies] = await db.query<RowDataPacket[]>(queries.allCompanies)
 
         if(companies.length) {
             response.status(200).json(companies as ICompany[]);

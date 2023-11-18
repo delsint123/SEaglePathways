@@ -36,11 +36,14 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
     //submits a review to a server asynchronously
     const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
         const sessionUserId = sessionStorage.getItem('user');
+
+        const companyId = props.companies.find(comp => comp.name === request.company)?.companyId;
         
         const review = {
             userId: sessionUserId ? parseInt(sessionUserId) : null,
             title: request.title,
             company: request.company,
+            companyId: companyId,
             description: request.description,
             startDate: request.datesAttended[0].toDate(),
             endDate: request.datesAttended[1].toDate(),
@@ -82,10 +85,20 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     //Add a company to the database
     const addCompany = async (company: string): Promise<void> => {
+
+        const words = company.split(' ');
+
+        for(let i = 0; i < words.length; i++) {
+            words[i] = words[i][0].toUpperCase() + words[i].substring(1).toLowerCase();
+        }
+
+        company = words.join(' ');
+
         await instance.post<string, AxiosResponse>('/company/add', {company})
             .then((res) => {
                 //clear new company state and get companies from server
                 setNewCompany('');
+                form.setFieldsValue({company: company});
                 props.getCompaniesAsync();
 
                 notificationApi.success({

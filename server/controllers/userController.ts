@@ -3,16 +3,14 @@ import db from '../database';
 import IUserRequestModel from '../models/userRequestModel';
 import IUser from '../models/userModel';
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import queries from './queries/userQueries';
 
 async function registerAsync(request: Request, response: Response): Promise<void> {
 
     const user = request.body.user as IUserRequestModel;
 
     try {
-        const [...userEmail] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM user WHERE email = ?`, 
-            [user.email]
-        );
+        const [...userEmail] = await db.query<RowDataPacket[]>(queries.isEmailUsed, [user.email]);
 
         if(userEmail[0].length) {
             throw new Error('An account has already been created with this email.');
@@ -27,10 +25,7 @@ async function registerAsync(request: Request, response: Response): Promise<void
     try {
         const [firstName, lastName] = user.name.split(' ');
 
-        const [result] = await db.query<ResultSetHeader>(
-            `INSERT INTO user (firstName, lastName, email, password, graduationYear) VALUES (?, ?, ?, ?, ?)`,
-            [firstName, lastName, user.email, user.password, user.graduationYear]
-        );
+        const [result] = await db.query<ResultSetHeader>(queries.createUser, [firstName, lastName, user.email, user.password, user.graduationYear]);
 
         if (result.affectedRows) {
             response.status(200).json({
@@ -56,9 +51,7 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
     const user = request.body.user as IUserRequestModel;
 
     try {
-        const [result] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM user WHERE email = ?`, [user.email]
-        );
+        const [result] = await db.query<RowDataPacket[]>(queries.getUser, [user.email]);
 
         if(result.length && result[0].password == user.password) {
             request.session.userId = result[0].userId;
