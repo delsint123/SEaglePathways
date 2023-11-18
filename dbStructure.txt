@@ -26,13 +26,13 @@ CREATE TABLE review (
 
 CREATE TABLE company (
      companyId         integer not null auto_increment,
-     name               varchar(20),
+     name               varchar(40),
      primary key (companyId)
 );
 
 CREATE TABLE tag (
      tagId              integer not null auto_increment,
-     name               varchar(20),
+     name               varchar(40),
      description        varchar(100),
      primary key (tagId)
 );
