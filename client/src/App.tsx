@@ -1,14 +1,17 @@
 import React, {ReactElement} from 'react';
 import {BrowserRouter, Route, Routes, Link, useNavigate} from 'react-router-dom';
-import {Button, notification} from 'antd';
+import {Button, Dropdown, Menu, MenuProps, notification} from 'antd';
 import ReviewQueue from './components/ReviewQueue.tsx';
 import Login from './components/Login.tsx';
 import Register from './components/Register.tsx';
 import Review from './components/Review.tsx';
+import Profile from './components/Profile.tsx';
+import EagleAvatar from './assets/eagleAvatar.png';
 
 import './App.css';
 import Logo from './assets/SEaglePathways-04.png';
 import axios from 'axios';
+import { ItemType, MenuItemType } from 'antd/es/menu/hooks/useItems';
 
 function Root(): ReactElement { 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
@@ -42,17 +45,37 @@ function Root(): ReactElement {
             });
     }
 
+    const avatarMenuItems = [
+        {
+            key: 'profile',
+            onClick: () => navigate('/profile'),
+            label: 'Profile'
+        } as MenuItemType,
+        {
+            key: 'logout',
+            onClick: () => logoutUser(),
+            label: 'Logout'
+        } as MenuItemType
+    ];
+
+    const avatar = {
+        key: 'logout',
+        items: avatarMenuItems, 
+    } as MenuProps;
+
     return (
         <>
             {contextHolder}
             {/* Setup navigation bar */}
             <nav className='nav'>   
                 <Link to={"/"} className="nav__logo"><img alt="SEaglePathways" src={Logo} className="logo"/></Link>
-                <Link to={"/"} className='nav__reviews'>Reviews</Link>
 
                 {isUserLoggedOut ?
-                    <Link to={"/login"} className='nav__login'>Login</Link> 
-                    : <Button onClick={logoutUser}>Logout</Button>
+                    <Button onClick={() => navigate('/login')} className='nav__login'>Login</Button> 
+                    : 
+                    <Dropdown menu={avatar} overlayStyle={{ width: "150px"}}> 
+                        <img alt="avatar" src={EagleAvatar} className="nav__avatar"/>
+                    </Dropdown>
                 }
             </nav>
 
@@ -62,6 +85,7 @@ function Root(): ReactElement {
                 <Route path='/login' element={<Login />}/>
                 <Route path='/register' element={<Register />}/>
                 <Route path='/review/:reviewId' element={<Review />}/>
+                <Route path='/profile' element={<Profile />}/>
             </Routes>
                 
             {/* Setup footer */}
