@@ -103,6 +103,31 @@ async function logoutAsync(request: Request, response: Response): Promise<void> 
     }
 }
 
+async function getUserDetailsAsync(request: Request, response: Response): Promise<void> {
+    const userId = request.session.userId || request.params.userId;
+
+    try {
+        const [result] = await db.query<RowDataPacket[]>(queries.userDetails, [userId]);
+
+        if(result.length) {
+            response.status(200).json({
+                userId: result[0].userId,
+                name: `${result[0].firstName} ${result[0].lastName}`,
+                email: result[0].email,
+                graduationYear: result[0].graduationYear
+            } as IUser);
+            console.log("User details retrieved!");
+        }
+        else {
+            throw new Error('User details could not be retrieved');
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
 function validateEmail(email: string): void {
     // Regex for FGCU email addresses
     const emailRegex = /^[a-zA-Z0-9._%+-]+@(eagle\.)?fgcu\.edu$/;
@@ -115,5 +140,6 @@ function validateEmail(email: string): void {
 export default {
     registerAsync,
     loginAsync,
-    logoutAsync
+    logoutAsync,
+    getUserDetailsAsync
 }

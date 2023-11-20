@@ -16,3 +16,7 @@
 .userReviewsContainer {
     flex-grow: 3;
 }
+
+.reviewLink:hover {
+    color:  rgba(0, 71, 133, 0.7);
+}

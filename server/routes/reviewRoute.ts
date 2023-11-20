@@ -19,4 +19,8 @@ router.post('/queueReviews', async (req: Request, res: Response) =>
     await reviewController.getQueueReviewsAsync(req, res)
 );
 
+router.get('/user/:userId', async (req: Request, res: Response) => 
+    await reviewController.getReviewsByUserIdAsync(req, res)
+);
+
 export default router;

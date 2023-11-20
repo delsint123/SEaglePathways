@@ -176,7 +176,7 @@ export default function ReviewQueue(): ReactElement {
 
     useEffect(() => {
         getTotalReviewCount();
-    }, [currentPage, currentFilter]);
+    }, [currentPage, currentFilter, isModalOpen]);
 
     return (
         <div className='content'>
@@ -261,6 +261,7 @@ export default function ReviewQueue(): ReactElement {
                                 className='review' 
                                 title={review.title}
                                 onClick={() => navigateToReview(review.reviewId)}
+                                loading={reviews.length === 0}
                             >
                                 <div className='review__companyDateContainer'>
                                     <Text className='review__company'>{review.company}</Text>

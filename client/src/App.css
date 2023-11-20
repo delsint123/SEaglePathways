@@ -66,3 +66,11 @@
     width: 150px;
     margin-top: 10px;
 }
+
+.ant-pagination-item-active {
+    border-color: rgba(1, 121, 76, 0.8) !important;
+}
+
+.ant-pagination-item-active > a {
+    color: rgba(1, 121, 76, 0.8) !important;
+}

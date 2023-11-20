@@ -15,4 +15,8 @@ router.get('/logout', async (req: Request, res: Response) =>
     await userController.logoutAsync(req, res)
 );
 
+router.get('/details/:userId', async (req: Request, res: Response) =>
+    await userController.getUserDetailsAsync(req, res)
+);
+
 export default router;
