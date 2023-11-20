@@ -17,6 +17,10 @@
     flex-grow: 3;
 }
 
+.reviewLink {
+    color:  rgba(0, 71, 133);
+}
+
 .reviewLink:hover {
-    color:  rgba(0, 71, 133, 0.7);
+    color:  rgba(1, 121, 76);
 }

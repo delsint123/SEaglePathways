@@ -1,16 +1,32 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 
-import { Typography, notification, Card, Table, Tag } from "antd";
+import { Typography, notification, Card, Table, Tag, Tooltip } from "antd";
 import IUser from "../../../server/models/userModel";
 import axios from "axios";
 import "../styling/Profile.css";
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
 import { useNavigate } from 'react-router-dom';
+import EditReviewModal from './EditReviewModal';
+import ICompany from '../../../server/models/companyModel';
+import ITag from '../../../server/models/tagModel';
+import { DeleteTwoTone, EditTwoTone } from '@ant-design/icons';
+import { AlignType } from 'rc-table/lib/interface';
 
-export default function Profile(): ReactElement {
+interface ProfileProps {
+    companies: ICompany[],
+    tags: ITag[],
+    getCompaniesAsync: () => Promise<void>,
+    getTagsAsync: () => Promise<void>,
+    addCompany: (companyName: string) => Promise<void>,
+    addTag: (tag: ITag) => Promise<void>
+}
+
+export default function Profile(props: ProfileProps): ReactElement {
     //initialize state
     const [userDetails, setUserDetails] = useState<IUser>({} as IUser);
     const [userReviews, setUserReviews] = useState<IReviewViewModel[]>([]);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [reviewToEdit, setReviewToEdit] = useState<IReviewViewModel>({} as IReviewViewModel);
 
     const navigate = useNavigate();
     const [notificationApi, contextHolder] = notification.useNotification();
@@ -51,6 +67,11 @@ export default function Profile(): ReactElement {
                 });
             });
     }
+
+    const openEditModal = (reviewId: number): void => {
+        setIsEditing(true);
+        setReviewToEdit(userReviews.find((review) => review.reviewId == reviewId) as IReviewViewModel);
+    }
     
     const reviews = [
         {
@@ -83,7 +104,7 @@ export default function Profile(): ReactElement {
                     ))}
                 </>
             ),
-            width: '20%'
+            width: '15%'
         },
         {
             title: 'Grade Level',
@@ -101,7 +122,29 @@ export default function Profile(): ReactElement {
                 <Text>{`${review.startDate.slice(0, 10)} ~ ${review.endDate.slice(0, 10)}`}</Text>
             ),
             sorter: (a: IReviewViewModel, b: IReviewViewModel) => a.startDate.localeCompare(b.startDate),
-            width: '20%'
+            width: '22%'
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'center' as AlignType,
+            render: (review: IReviewViewModel) => (
+                <>
+                    <Tooltip title='Edit' placement='top'>
+                        <a onClick={() => openEditModal(review.reviewId)}>
+                            <Text className='actions'><EditTwoTone twoToneColor='#01794d'/></Text>
+                        </a>
+                    </Tooltip>
+                    
+                    {/* <Text>  |  </Text>
+                    
+                    <Tooltip title='Delete' placement='top'>
+                        <a onClick={() => openEditModal(review.reviewId)}>
+                            <Text className='actions'><DeleteTwoTone twoToneColor='#004785'/></Text>
+                        </a>
+                    </Tooltip> */}
+                </>
+            ),
         }
     ]
 
@@ -109,6 +152,10 @@ export default function Profile(): ReactElement {
         getUserDetails();
         getUserReviews();
     }, []);
+
+    useEffect(() => {
+        getUserReviews();
+    }, [isEditing]);
 
     return (
         <div className='content profilePage'>
@@ -154,6 +201,20 @@ export default function Profile(): ReactElement {
                     />
                 </Card>
             </div>
+
+            {isEditing &&
+                <EditReviewModal
+                    review={reviewToEdit}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    companies={props.companies}
+                    tags={props.tags}
+                    getCompaniesAsync={props.getCompaniesAsync}
+                    getTagsAsync={props.getTagsAsync}
+                    addCompany={props.addCompany}
+                    addTag={props.addTag}
+                />
+            }
         </div>
     );
 }

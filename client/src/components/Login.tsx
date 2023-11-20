@@ -22,14 +22,13 @@ export default function Login(): ReactElement {
             .then((res) => {
                 notificationApi.success({
                     message: 'Login Successful',
-                    description: 'You have been logged in successfully! Navigating home...',
+                    description: 'You have been logged in successfully! Navigating to profile...',
                     placement: 'bottomRight',
                 });
                 
-                //TODO:redirect to account page if successful
-                //checks if the response is successful and redirects to the home page
+                //checks if the response is successful and redirects to the profile page
                 sessionStorage.setItem('user', res.data.userId);
-                setTimeout(() => navigate('/'), 3000);
+                setTimeout(() => navigate('/profile'), 3000);
             })
             .catch((error) => {
                 notificationApi.error({

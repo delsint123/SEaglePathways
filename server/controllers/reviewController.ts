@@ -262,6 +262,69 @@ async function getReviewsByUserIdAsync(request: Request, response: Response): Pr
     }  
 }
 
+async function editReviewAsync(data: Request, response: Response): Promise<void> {
+    const review = {...data.body.review} as IReview;
+
+    //check if specific fields are null
+    try {
+        validateReview(review);
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //edit review        
+    let res: ResultSetHeader = {} as ResultSetHeader;
+
+    try {
+        const result = await db.query<ResultSetHeader>(queries.editReview, [
+            review.title, 
+            review.companyId, 
+            review.description, 
+            dateFormat(review.startDate, "isoDate"), 
+            dateFormat(review.endDate, "isoDate"), 
+            review.gradeLevel,
+            review.reviewId]
+        )
+
+        if(result[0].affectedRows === 0) {
+            throw new Error('Review could not be edited. Please try again.');
+        }
+        else {
+            res = result[0];
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //add tags
+    try {
+        if (res.affectedRows) {    
+            const tagRequest = {
+                reviewId: review.reviewId,
+                tagIds: review.tagIds
+            } as ITagReviewRequestViewModel; 
+
+            await tagController.updateTagsForReviewAsync(tagRequest, response);
+
+            response.status(200).json({
+                reviewId: review.reviewId,
+                ...review
+            } as IReview);
+            
+            console.log("Review has been updated!");
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
 //-----------------------------------------------------------------------------------
 //helper functions
 
@@ -345,5 +408,6 @@ export default {
     getReviewCountAsync, 
     getReviewByIdAsync,
     getQueueReviewsAsync,
-    getReviewsByUserIdAsync
+    getReviewsByUserIdAsync,
+    editReviewAsync
 }

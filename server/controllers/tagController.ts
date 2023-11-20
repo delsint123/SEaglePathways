@@ -74,9 +74,48 @@ async function addTagsToReviewAsync(request: ITagReviewRequestViewModel, respons
     }
 }
 
+async function updateTagsForReviewAsync(request: ITagReviewRequestViewModel, response: Response) {
+    const {reviewId, tagIds } = request;
+
+    //remove current tags
+    try {
+        await db.query<ResultSetHeader>(queries.deleteTagsForReview, [reviewId]);
+
+        console.log("Tags removed from review!");
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    const result = [] as number[];
+
+    try {
+        for (const tagId of tagIds) {
+            const [curRes] = await db.query<ResultSetHeader>(queries.addTagToReview, [reviewId, tagId]);
+
+            if (curRes.affectedRows) {
+                result.push(tagId);
+            }
+            else {
+                throw new Error('Tags could not be added to review');
+            }
+        }
+
+        console.log("Tags added to review!");
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+}
+
 export default {
     addTagAsync,
     getAllTagsAsync,
-    addTagsToReviewAsync
+    addTagsToReviewAsync,
+    updateTagsForReviewAsync
 }
 

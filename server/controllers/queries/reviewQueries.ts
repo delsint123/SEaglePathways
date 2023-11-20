@@ -19,6 +19,15 @@ const reviewsForUser=`
 const addReview=`
     INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`
+const editReview=`
+    UPDATE review 
+       SET title = ?, 
+           companyId = ?,
+           description = ?, 
+           startDate = ?, 
+           endDate = ?, 
+           gradeLevel = ?
+     WHERE reviewId = ?;`
 
 const queueReviews=`
     SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
@@ -154,6 +163,7 @@ export default {
     reviewById,
     reviewsForUser,
     addReview,
+    editReview,
 
     queueReviews,
 

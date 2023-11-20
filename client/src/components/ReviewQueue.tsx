@@ -11,16 +11,24 @@ import ITag from '../../../server/models/tagModel';
 import IReviewFilterRequest from '../../../server/models/reviewFilterRequestModel';
 import IReviewFilterViewModel from '../models/reviewFilterViewModel';
 
-export default function ReviewQueue(): ReactElement {
+interface ReviewQueueProps {
+    companies: ICompany[],
+    tags: ITag[],
+    getCompaniesAsync: () => Promise<void>,
+    getTagsAsync: () => Promise<void>,
+    addCompany: (companyName: string) => Promise<void>,
+    addTag: (tag: ITag) => Promise<void>
+}
+
+export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
     //initialize state
-    const [companies, setCompanies] = React.useState<ICompany[]>([]);
-    const [tags, setTags] = React.useState<ITag[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
     const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [currentFilter, setCurrentFilter] = useState<string>('None');
     const [queueFilters, setQueueFilters] = useState<IReviewFilterViewModel>();
+
 
     const navigate = useNavigate();
     const [form] = Form.useForm();
@@ -119,39 +127,6 @@ export default function ReviewQueue(): ReactElement {
             });
     }
 
-    //get all companies from the server
-    const getCompaniesAsync = async (): Promise<void> => {
-        await instance.get('/company/allCompanies')
-            .then((res) => {
-                //update state with data retrieved from server
-                const companies = [...res.data] as ICompany[];
-                setCompanies(companies);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
-    const getTagsAsync = async (): Promise<void> => {
-        await instance.get('/tag/allTags')
-            .then((res) => {
-                //update state with data retrieved from server
-                const tags = [...res.data] as ITag[];
-                setTags(tags);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
     const getTagsForDisplay = (review: IReviewViewModel): ReactElement[] => {
         return review.tags.map((tag, index) => (
             <Tooltip title={tag.description} placement='bottom'>
@@ -218,7 +193,7 @@ export default function ReviewQueue(): ReactElement {
                             onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, companyId: undefined } as IReviewFilterViewModel))}
                             filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                             filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                            options={companies.map(company => ({ value: company.companyId, label: company.name }))}
+                            options={props.companies.map(company => ({ value: company.companyId, label: company.name }))}
                         />
                     </Form.Item>
                     <Form.Item className='filterForm__item'>
@@ -232,7 +207,7 @@ export default function ReviewQueue(): ReactElement {
                             onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, tagId: undefined } as IReviewFilterViewModel)) }
                             filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                             filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                            options={tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
+                            options={props.tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
                         />
                     </Form.Item>
                     <Form.Item className='filterForm__item'>
@@ -295,12 +270,14 @@ export default function ReviewQueue(): ReactElement {
 
             {/* Render modal */}
             <SubmitReviewModal 
-                companies={companies}
-                tags={tags}
+                companies={props.companies}
+                tags={props.tags}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
-                getCompaniesAsync={getCompaniesAsync}
-                getTagsAsync={getTagsAsync}
+                getCompaniesAsync={props.getCompaniesAsync}
+                getTagsAsync={props.getTagsAsync}
+                addCompany={props.addCompany}
+                addTag={props.addTag}
             />
         </div>
     );
