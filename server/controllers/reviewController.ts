@@ -190,6 +190,7 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
             const reviews = reviewRes[0].map(review => {
                 return {
                     reviewId: review.reviewId,
+                    userId: review.userId,
                     title: review.title, 
                     company: review.name,
                     description: review.description, 

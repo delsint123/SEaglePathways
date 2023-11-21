@@ -10,6 +10,8 @@ import ICompany from '../../../server/models/companyModel';
 import ITag from '../../../server/models/tagModel';
 import IReviewFilterRequest from '../../../server/models/reviewFilterRequestModel';
 import IReviewFilterViewModel from '../models/reviewFilterViewModel';
+import EditReviewModal from './EditReviewModal';
+import { EditTwoTone } from '@ant-design/icons';
 
 interface ReviewQueueProps {
     companies: ICompany[],
@@ -28,7 +30,8 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [currentFilter, setCurrentFilter] = useState<string>('None');
     const [queueFilters, setQueueFilters] = useState<IReviewFilterViewModel>();
-
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [reviewToEdit, setReviewToEdit] = useState<IReviewViewModel>({} as IReviewViewModel);
 
     const navigate = useNavigate();
     const [form] = Form.useForm();
@@ -36,6 +39,7 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
     const { Paragraph, Text } = Typography;
 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
+    const currentUser = parseInt(sessionStorage.getItem('user') || "");
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
@@ -136,7 +140,14 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
     }
 
     const navigateToReview = (reviewId: number): void => {
-        navigate(`/review/${reviewId}`);
+        if(isEditing) {
+            setTimeout(() => navigate(`/review/${reviewId}`), 1000);
+        }
+    }
+
+    const openEditModal = (reviewId: number): void => {
+        setIsEditing(true);
+        setReviewToEdit(reviews.find(review => review.reviewId === reviewId) as IReviewViewModel);
     }
 
     //refresh the review data when the modal opens and closes
@@ -233,6 +244,11 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
                         <List.Item>
                             <Card 
                                 headStyle={{ fontSize:"20px" }} 
+                                extra={review.userId == currentUser && 
+                                    <Button onClick={() => openEditModal(review.reviewId)}>
+                                        <EditTwoTone twoToneColor='#004785'/>
+                                    </Button>
+                                }
                                 className='review' 
                                 title={review.title}
                                 onClick={() => navigateToReview(review.reviewId)}
@@ -279,6 +295,20 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
                 addCompany={props.addCompany}
                 addTag={props.addTag}
             />
+
+            {isEditing &&
+                <EditReviewModal
+                    review={reviewToEdit}
+                    companies={props.companies}
+                    tags={props.tags}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    getCompaniesAsync={props.getCompaniesAsync}
+                    getTagsAsync={props.getTagsAsync}
+                    addCompany={props.addCompany}
+                    addTag={props.addTag}
+                />
+            }
         </div>
     );
 }
