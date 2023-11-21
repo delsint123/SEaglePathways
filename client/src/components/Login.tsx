@@ -58,7 +58,6 @@ export default function Login(): ReactElement {
                 style={{ maxWidth: 600 }}
                 initialValues={{ remember: true }}
                 onFinish={loginUser}
-                //onFinishFailed={onFinishFailed}
                 autoComplete="off"
             >
                 <Form.Item

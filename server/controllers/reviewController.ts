@@ -325,6 +325,42 @@ async function editReviewAsync(data: Request, response: Response): Promise<void>
     }
 }
 
+async function deleteReviewAsync(data: Request, response: Response): Promise<void> {
+    const reviewId = data.body.reviewId;
+
+    //delete review
+    try {
+        const result = await db.query<ResultSetHeader>(queries.deleteReview, [reviewId]);
+
+        if(result[0].affectedRows === 0) {
+            throw new Error('Review could not be deleted. Please try again.');
+        }
+        else {
+            response.status(200).json({
+                reviewId: reviewId
+            } as IReview);
+            
+            console.log("Review has been deleted!");
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //delete tags
+    try {
+        await db.query<ResultSetHeader>(queries.deleteTagsForReview, [reviewId]);
+
+        console.log("Tags removed from review!");
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
 //-----------------------------------------------------------------------------------
 //helper functions
 
@@ -409,5 +445,6 @@ export default {
     getReviewByIdAsync,
     getQueueReviewsAsync,
     getReviewsByUserIdAsync,
-    editReviewAsync
+    editReviewAsync,
+    deleteReviewAsync
 }

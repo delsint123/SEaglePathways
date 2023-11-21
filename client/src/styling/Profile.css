@@ -24,3 +24,7 @@
 .reviewLink:hover {
     color:  rgba(1, 121, 76);
 }
+
+.actions {
+    cursor: pointer;
+}

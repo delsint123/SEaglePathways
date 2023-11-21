@@ -27,4 +27,8 @@ router.post('/edit', async (req: Request, res: Response) =>
     await reviewController.editReviewAsync(req, res)
 );
 
+router.post('/delete', async (req: Request, res: Response) =>
+    await reviewController.deleteReviewAsync(req, res)
+);
+
 export default router;

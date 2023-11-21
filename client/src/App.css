@@ -74,3 +74,20 @@
 .ant-pagination-item-active > a {
     color: rgba(1, 121, 76, 0.8) !important;
 }
+
+.ant-btn-primary {
+    background-color: rgba(0, 71, 133, 0.8) !important;
+    border-color: rgba(0, 71, 133, 0.8) !important;
+    box-shadow: 0 2px 0 rgba(0, 71, 133, 0.1);
+}
+
+.ant-btn-primary:hover {
+    background-color: rgba(1, 121, 76, 0.8) !important;
+    border-color: rgba(1, 121, 76, 0.8) !important;
+    box-shadow: 0 2px 0 rgba(1, 121, 76, 0.1);
+}
+
+.ant-btn-default:hover {
+    color: rgba(0, 71, 133, 0.8) !important;
+    border-color: rgba(0, 71, 133, 0.8) !important;
+}

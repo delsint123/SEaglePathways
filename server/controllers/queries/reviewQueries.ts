@@ -28,6 +28,8 @@ const editReview=`
            endDate = ?, 
            gradeLevel = ?
      WHERE reviewId = ?;`
+const deleteReview=`DELETE FROM review WHERE reviewId = ?;`
+const deleteTagsForReview = `DELETE FROM reviewTags WHERE reviewId = ?`;
 
 const queueReviews=`
     SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
@@ -164,6 +166,8 @@ export default {
     reviewsForUser,
     addReview,
     editReview,
+    deleteReview,
+    deleteTagsForReview,
 
     queueReviews,
 

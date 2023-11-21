@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 
-import { Typography, notification, Card, Table, Tag, Tooltip } from "antd";
+import { Typography, notification, Card, Table, Tag, Tooltip, Popconfirm, Button } from "antd";
 import IUser from "../../../server/models/userModel";
 import axios from "axios";
 import "../styling/Profile.css";
@@ -68,9 +68,29 @@ export default function Profile(props: ProfileProps): ReactElement {
             });
     }
 
+    const deleteReview = async (reviewId: number): Promise<void> => {
+        await instance.post<number, void>('/review/delete', {reviewId})
+            .then((res) => {
+                notificationApi.success({
+                    message: 'Success',
+                    description: 'Review deleted successfully!',
+                    placement: 'bottomRight',
+                });
+
+                getUserReviews();
+            })
+            .catch((error) => {
+                notificationApi.error({
+                    message: 'Error',
+                    description: error.response.data.error,
+                    placement: 'bottomRight',
+                });
+            });
+    }
+
     const openEditModal = (reviewId: number): void => {
         setIsEditing(true);
-        setReviewToEdit(userReviews.find((review) => review.reviewId == reviewId) as IReviewViewModel);
+        setReviewToEdit(userReviews.find((review) => review.reviewId === reviewId) as IReviewViewModel);
     }
     
     const reviews = [
@@ -136,13 +156,21 @@ export default function Profile(props: ProfileProps): ReactElement {
                         </a>
                     </Tooltip>
                     
-                    {/* <Text>  |  </Text>
+                    <Text>  |  </Text>
                     
                     <Tooltip title='Delete' placement='top'>
-                        <a onClick={() => openEditModal(review.reviewId)}>
+                        <Popconfirm 
+                            title={"Delete"}
+                            description={"Are you sure you want to delete this review?"}
+                            onConfirm={() => deleteReview(review.reviewId)}
+                            okText="Yes"
+                            placement='topLeft'
+                            icon={<DeleteTwoTone twoToneColor='#ff0000'/>}
+                        >
                             <Text className='actions'><DeleteTwoTone twoToneColor='#004785'/></Text>
-                        </a>
-                    </Tooltip> */}
+                        </Popconfirm>
+                        {/* </a> */}
+                    </Tooltip>
                 </>
             ),
         }
@@ -165,7 +193,7 @@ export default function Profile(props: ProfileProps): ReactElement {
                     className='profileDetails' 
                     title="Profile" 
                     headStyle={{ fontSize:"21px", padding: "15px 24px"}}
-                    loading={userDetails.userId == null}
+                    loading={userDetails.userId === null}
                 >
                     <Paragraph>
                         <Text strong>Name: </Text>
@@ -187,7 +215,7 @@ export default function Profile(props: ProfileProps): ReactElement {
                     title="Your Reviews" 
                     headStyle={{ fontSize:"21px", padding: "15px 24px"}}
                     bodyStyle={{ paddingBottom: "0px"}}
-                    loading={userReviews.length == 0}
+                    loading={userReviews.length === 0}
                 >
                     <Table
                         dataSource={userReviews}
