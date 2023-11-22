@@ -10,6 +10,14 @@ async function registerAsync(request: Request, response: Response): Promise<void
     const user = request.body.user as IUserRequestModel;
 
     try {
+        validateEmail(user.email);
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    try {
         const [...userEmail] = await db.query<RowDataPacket[]>(queries.isEmailUsed, [user.email]);
 
         if(userEmail[0].length) {
@@ -66,7 +74,7 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
             throw new Error('Your password is incorrect. Try Again.');
         }
         else {
-            throw new Error('Your account could not be found. Try Again.');
+            throw new Error('Your account could not be found. Please register or try again.');
         }
 
     } catch (error) {
@@ -75,7 +83,63 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
     }
 }
 
+async function logoutAsync(request: Request, response: Response): Promise<void> {
+    try {
+        request.session.userId = undefined;
+
+        if(request.session.userId != undefined) {
+            throw new Error('User could not be logged out');
+        }
+
+        response.status(200).json({
+            message: 'User logged out. Navigating Home...'
+        });
+
+        console.log("User logged out!");
+        
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
+async function getUserDetailsAsync(request: Request, response: Response): Promise<void> {
+    const userId = request.session.userId || request.params.userId;
+
+    try {
+        const [result] = await db.query<RowDataPacket[]>(queries.userDetails, [userId]);
+
+        if(result.length) {
+            response.status(200).json({
+                userId: result[0].userId,
+                name: `${result[0].firstName} ${result[0].lastName}`,
+                email: result[0].email,
+                graduationYear: result[0].graduationYear
+            } as IUser);
+            console.log("User details retrieved!");
+        }
+        else {
+            throw new Error('User details could not be retrieved');
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
+function validateEmail(email: string): void {
+    // Regex for FGCU email addresses
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(eagle\.)?fgcu\.edu$/;
+
+    if(!emailRegex.test(email)) {
+        throw new Error('Email is not valid. Please use an FGCU email address');
+    }
+}
+
 export default {
     registerAsync,
-    loginAsync
+    loginAsync,
+    logoutAsync,
+    getUserDetailsAsync
 }

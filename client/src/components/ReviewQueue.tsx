@@ -10,17 +10,28 @@ import ICompany from '../../../server/models/companyModel';
 import ITag from '../../../server/models/tagModel';
 import IReviewFilterRequest from '../../../server/models/reviewFilterRequestModel';
 import IReviewFilterViewModel from '../models/reviewFilterViewModel';
+import EditReviewModal from './EditReviewModal';
+import { EditTwoTone } from '@ant-design/icons';
 
-export default function ReviewQueue(): ReactElement {
+interface ReviewQueueProps {
+    companies: ICompany[],
+    tags: ITag[],
+    getCompaniesAsync: () => Promise<void>,
+    getTagsAsync: () => Promise<void>,
+    addCompany: (companyName: string) => Promise<void>,
+    addTag: (tag: ITag) => Promise<void>
+}
+
+export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
     //initialize state
-    const [companies, setCompanies] = React.useState<ICompany[]>([]);
-    const [tags, setTags] = React.useState<ITag[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [reviews, setReviews] = useState<IReviewViewModel[]>([]);
     const [totalReviewCount, setTotalReviewCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [currentFilter, setCurrentFilter] = useState<string>('None');
     const [queueFilters, setQueueFilters] = useState<IReviewFilterViewModel>();
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [reviewToEdit, setReviewToEdit] = useState<IReviewViewModel>({} as IReviewViewModel);
 
     const navigate = useNavigate();
     const [form] = Form.useForm();
@@ -28,6 +39,7 @@ export default function ReviewQueue(): ReactElement {
     const { Paragraph, Text } = Typography;
 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
+    const currentUser = parseInt(sessionStorage.getItem('user') || "");
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
@@ -119,39 +131,6 @@ export default function ReviewQueue(): ReactElement {
             });
     }
 
-    //get all companies from the server
-    const getCompaniesAsync = async (): Promise<void> => {
-        await instance.get('/company/allCompanies')
-            .then((res) => {
-                //update state with data retrieved from server
-                const companies = [...res.data] as ICompany[];
-                setCompanies(companies);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
-    const getTagsAsync = async (): Promise<void> => {
-        await instance.get('/tag/allTags')
-            .then((res) => {
-                //update state with data retrieved from server
-                const tags = [...res.data] as ITag[];
-                setTags(tags);
-            })
-            .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
-            });
-    }
-
     const getTagsForDisplay = (review: IReviewViewModel): ReactElement[] => {
         return review.tags.map((tag, index) => (
             <Tooltip title={tag.description} placement='bottom'>
@@ -161,7 +140,14 @@ export default function ReviewQueue(): ReactElement {
     }
 
     const navigateToReview = (reviewId: number): void => {
-        navigate(`/review/${reviewId}`);
+        if(isEditing) {
+            setTimeout(() => navigate(`/review/${reviewId}`), 1000);
+        }
+    }
+
+    const openEditModal = (reviewId: number): void => {
+        setIsEditing(true);
+        setReviewToEdit(reviews.find(review => review.reviewId === reviewId) as IReviewViewModel);
     }
 
     //refresh the review data when the modal opens and closes
@@ -176,7 +162,7 @@ export default function ReviewQueue(): ReactElement {
 
     useEffect(() => {
         getTotalReviewCount();
-    }, [currentPage, currentFilter]);
+    }, [currentPage, currentFilter, isModalOpen]);
 
     return (
         <div className='content'>
@@ -218,7 +204,7 @@ export default function ReviewQueue(): ReactElement {
                             onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, companyId: undefined } as IReviewFilterViewModel))}
                             filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                             filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                            options={companies.map(company => ({ value: company.companyId, label: company.name }))}
+                            options={props.companies.map(company => ({ value: company.companyId, label: company.name }))}
                         />
                     </Form.Item>
                     <Form.Item className='filterForm__item'>
@@ -232,7 +218,7 @@ export default function ReviewQueue(): ReactElement {
                             onClear={() => setQueueFilters((prevFilters) => ({ ...prevFilters, tagId: undefined } as IReviewFilterViewModel)) }
                             filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                             filterSort={(a, b) => (a.label.toLowerCase()).localeCompare(b.label.toLowerCase())}
-                            options={tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
+                            options={props.tags.map(tag => ({ value: tag.tagId, label: tag.name }))}
                         />
                     </Form.Item>
                     <Form.Item className='filterForm__item'>
@@ -258,9 +244,15 @@ export default function ReviewQueue(): ReactElement {
                         <List.Item>
                             <Card 
                                 headStyle={{ fontSize:"20px" }} 
+                                extra={review.userId == currentUser && 
+                                    <Button onClick={() => openEditModal(review.reviewId)}>
+                                        <EditTwoTone twoToneColor='#004785'/>
+                                    </Button>
+                                }
                                 className='review' 
                                 title={review.title}
                                 onClick={() => navigateToReview(review.reviewId)}
+                                loading={reviews.length === 0}
                             >
                                 <div className='review__companyDateContainer'>
                                     <Text className='review__company'>{review.company}</Text>
@@ -294,13 +286,29 @@ export default function ReviewQueue(): ReactElement {
 
             {/* Render modal */}
             <SubmitReviewModal 
-                companies={companies}
-                tags={tags}
+                companies={props.companies}
+                tags={props.tags}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
-                getCompaniesAsync={getCompaniesAsync}
-                getTagsAsync={getTagsAsync}
+                getCompaniesAsync={props.getCompaniesAsync}
+                getTagsAsync={props.getTagsAsync}
+                addCompany={props.addCompany}
+                addTag={props.addTag}
             />
+
+            {isEditing &&
+                <EditReviewModal
+                    review={reviewToEdit}
+                    companies={props.companies}
+                    tags={props.tags}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    getCompaniesAsync={props.getCompaniesAsync}
+                    getTagsAsync={props.getTagsAsync}
+                    addCompany={props.addCompany}
+                    addTag={props.addTag}
+                />
+            }
         </div>
     );
 }

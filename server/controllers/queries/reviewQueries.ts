@@ -11,9 +11,25 @@ const reviewById=`
       FROM review as r
            JOIN company as c on c.companyId = r.companyId
      WHERE r.reviewId = ?;`
+const reviewsForUser=`
+    SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
+    FROM review as r
+        JOIN company as c on c.companyId = r.companyId
+    WHERE r.userId = ?;`
 const addReview=`
     INSERT INTO review (title, userId, companyId, description, startDate, endDate, gradeLevel) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`
+const editReview=`
+    UPDATE review 
+       SET title = ?, 
+           companyId = ?,
+           description = ?, 
+           startDate = ?, 
+           endDate = ?, 
+           gradeLevel = ?
+     WHERE reviewId = ?;`
+const deleteReview=`DELETE FROM review WHERE reviewId = ?;`
+const deleteTagsForReview = `DELETE FROM reviewTags WHERE reviewId = ?`;
 
 const queueReviews=`
     SELECT r.reviewId, r.title, r.userId, c.name, r.description, r.startDate, r.endDate, r.gradeLevel
@@ -147,7 +163,11 @@ export default {
     tagsForAReview,
     allReviews,
     reviewById,
+    reviewsForUser,
     addReview,
+    editReview,
+    deleteReview,
+    deleteTagsForReview,
 
     queueReviews,
 

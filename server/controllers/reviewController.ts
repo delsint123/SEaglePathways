@@ -154,7 +154,6 @@ async function getReviewByIdAsync(request: Request, response: Response): Promise
     } catch (error) {
         response.status(500).json({'error': (error as Error).message});
         console.log(error);
-        return;
     }
 }
 
@@ -191,6 +190,7 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
             const reviews = reviewRes[0].map(review => {
                 return {
                     reviewId: review.reviewId,
+                    userId: review.userId,
                     title: review.title, 
                     company: review.name,
                     description: review.description, 
@@ -208,8 +208,158 @@ async function getQueueReviewsAsync(data: Request, response: Response): Promise<
     } catch (error) {
         response.status(500).json({'error': (error as Error).message});
         console.log(error);
+    }    
+}
+
+async function getReviewsByUserIdAsync(request: Request, response: Response): Promise<void> {
+    const userId = request.session.userId || request.params.userId;
+
+    let tags: RowDataPacket[] = [];
+
+    try {
+        const tagRes = await db.query<RowDataPacket[]>(queries.allTagsForReviews);
+
+        if(!tagRes) {
+            throw new Error('The tags could not be retrieved');
+        }
+        else {
+            tags = tagRes[0];
+        }
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
         return;
     }    
+    
+    //retrieve reviews
+    try {
+        const reviewRes = await db.query<RowDataPacket[]>(queries.reviewsForUser, [userId]);
+
+        if(!reviewRes[0].length) {
+            throw new Error('There are no reviews with this filter. Please try again.');
+        } 
+        else {
+            const reviews = reviewRes[0].map(review => {
+                return {
+                    reviewId: review.reviewId,
+                    userId: review.userId,
+                    title: review.title, 
+                    company: review.name,
+                    description: review.description, 
+                    startDate: review.startDate,
+                    endDate: review.endDate,
+                    gradeLevel: review.gradeLevel,
+                    tags: tags.filter(tag => tag.reviewId === review.reviewId)
+                } as IReviewViewModel;
+            });
+
+            response.status(200).json(reviews);
+            console.log("Review retrieval complete!");
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }  
+}
+
+async function editReviewAsync(data: Request, response: Response): Promise<void> {
+    const review = {...data.body.review} as IReview;
+
+    //check if specific fields are null
+    try {
+        validateReview(review);
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //edit review        
+    let res: ResultSetHeader = {} as ResultSetHeader;
+
+    try {
+        const result = await db.query<ResultSetHeader>(queries.editReview, [
+            review.title, 
+            review.companyId, 
+            review.description, 
+            dateFormat(review.startDate, "isoDate"), 
+            dateFormat(review.endDate, "isoDate"), 
+            review.gradeLevel,
+            review.reviewId]
+        )
+
+        if(result[0].affectedRows === 0) {
+            throw new Error('Review could not be edited. Please try again.');
+        }
+        else {
+            res = result[0];
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //add tags
+    try {
+        if (res.affectedRows) {    
+            const tagRequest = {
+                reviewId: review.reviewId,
+                tagIds: review.tagIds
+            } as ITagReviewRequestViewModel; 
+
+            await tagController.updateTagsForReviewAsync(tagRequest, response);
+
+            response.status(200).json({
+                reviewId: review.reviewId,
+                ...review
+            } as IReview);
+            
+            console.log("Review has been updated!");
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
+}
+
+async function deleteReviewAsync(data: Request, response: Response): Promise<void> {
+    const reviewId = data.body.reviewId;
+
+    //delete review
+    try {
+        const result = await db.query<ResultSetHeader>(queries.deleteReview, [reviewId]);
+
+        if(result[0].affectedRows === 0) {
+            throw new Error('Review could not be deleted. Please try again.');
+        }
+        else {
+            response.status(200).json({
+                reviewId: reviewId
+            } as IReview);
+            
+            console.log("Review has been deleted!");
+        }
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+        return;
+    }
+
+    //delete tags
+    try {
+        await db.query<ResultSetHeader>(queries.deleteTagsForReview, [reviewId]);
+
+        console.log("Tags removed from review!");
+
+    } catch (error) {
+        response.status(500).json({'error': (error as Error).message});
+        console.log(error);
+    }
 }
 
 //-----------------------------------------------------------------------------------
@@ -294,5 +444,8 @@ export default {
     submitReviewAsync, 
     getReviewCountAsync, 
     getReviewByIdAsync,
-    getQueueReviewsAsync
+    getQueueReviewsAsync,
+    getReviewsByUserIdAsync,
+    editReviewAsync,
+    deleteReviewAsync
 }

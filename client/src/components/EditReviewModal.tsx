@@ -7,25 +7,28 @@ import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
 import ICompany from '../../../server/models/companyModel';
 import ITag from '../../../server/models/tagModel';
+import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
+import dayjs from 'dayjs';
 
 //Define the properties that this component expects
-interface SubmitReviewModalProps {
+interface EditReviewModalProps {
+    review: IReviewViewModel,
+    isEditing: boolean,
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>,
     companies: ICompany[],
     tags: ITag[],
-    isModalOpen: boolean, 
-    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
     getCompaniesAsync: () => Promise<void>,
     getTagsAsync: () => Promise<void>,
-    addCompany: (companyName: string) => Promise<void>,
+    addCompany: (companyName: string) => Promise<void>
     addTag: (tag: ITag) => Promise<void>
 }
 
 //Define the functional component that represents
-export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactElement {
+export default function EditReviewModal(props: EditReviewModalProps): ReactElement {
     //initialize state
+    const [newCompany, setNewCompany] = React.useState<string>("");
     const [newTag, setNewTag] = React.useState<ITag>({} as ITag);
-    const [newCompany, setNewCompany] = React.useState<string>('');
-    const [currentTagIds, setCurrentTagIds] = React.useState<number[]>([]);
+    const [currentTagIds, setCurrentTagIds] = React.useState<number[]>(props.review.tags.map(tag => tag.tagId) as number[]);
 
     const [form] = Form.useForm();
     const [notificationApi, contextHolder] = notification.useNotification();
@@ -35,13 +38,15 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         baseURL: 'http://localhost:5000'
     })
 
-    //submits a review to a server asynchronously
-    const submitReviewAsync = async (request: ISubmitReviewViewModel) => {
+    //edit a review asynchronously
+    const editReviewAsync = async (request: ISubmitReviewViewModel) => {
+
         const sessionUserId = sessionStorage.getItem('user');
 
         const companyId = props.companies.find(comp => comp.name === request.company)?.companyId;
         
         const review = {
+            reviewId: props.review.reviewId,
             userId: sessionUserId ? parseInt(sessionUserId) : null,
             title: request.title,
             company: request.company,
@@ -61,13 +66,15 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             });
 
             return;
-        }
-
+        }        
+        
         //post the review to the server
-        await instance.post<IReview, AxiosResponse>('/review/submit', {review})
+        await instance.post<IReview, AxiosResponse>('/review/edit', {review})
             .then((res) => {
-                props.setIsModalOpen(false);
-                form.resetFields();                
+                props.setIsEditing(false);
+                form.resetFields();  
+                
+                console.log(res.data)
                 
                 notificationApi.success({
                     message: 'Review Submitted',
@@ -103,7 +110,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
 
     const handleCancel = () => {
         //close form modal and reset form fields
-        props.setIsModalOpen(false);
+        props.setIsEditing(false);
         form.resetFields();
     };
 
@@ -139,11 +146,13 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
         props.getTagsAsync();
     }, [])
 
+    useEffect(() => {}, [props.review])
+
     return (
         <div>
             {contextHolder}
             {/*Uses modal component retrieved from AntDesign*/}
-            <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
+            <Modal title="Edit Review" open={props.isEditing} onOk={form.submit} onCancel={handleCancel} >
                 {/*Uses form, form.item, and select components retrieved from AntDesign*/}
                 <Form
                     className='login'
@@ -151,14 +160,15 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     form={form}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 }}
+                    style={{ maxWidth: 800 }}
                     initialValues={{ remember: true }}
-                    onFinish={submitReviewAsync}
+                    onFinish={editReviewAsync}
                     autoComplete="off"
                 >
                     <Form.Item
                         label="Title"
                         name="title"
+                        initialValue={props.review.title}
                         rules={[
                             {
                                 required: true,
@@ -166,12 +176,13 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                             },
                         ]}
                     >
-                        <Input />
+                        <Input/>
                     </Form.Item>
 
                     <Form.Item
                         label="Company"
                         name="company"
+                        initialValue={props.review.company}
                         rules={[
                             {
                                 required: true,
@@ -207,6 +218,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     <Form.Item 
                         label="Dates Attended"
                         name="datesAttended"
+                        initialValue={[dayjs(props.review.startDate), dayjs(props.review.endDate)]}
                         rules={[
                             {
                                 required: true,
@@ -220,6 +232,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     <Form.Item
                         label="Description"
                         name="description"
+                        initialValue={props.review.description}
                         rules={[
                             {
                                 required: true,
@@ -230,7 +243,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                         <Input.TextArea />
                     </Form.Item>
 
-                    <Form.Item label="Tags" name="tags">
+                    <Form.Item label="Tags" name="tags" initialValue={props.review.tags.map(tag => tag.name)}>
                         <Select
                             mode='multiple'
                             showSearch
@@ -273,6 +286,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
                     <Form.Item
                         label="Grade Level"
                         name="gradeLevel"
+                        initialValue={props.review.gradeLevel}
                         rules={[
                             {
                                 required: true,

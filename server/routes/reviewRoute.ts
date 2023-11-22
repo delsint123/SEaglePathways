@@ -19,4 +19,16 @@ router.post('/queueReviews', async (req: Request, res: Response) =>
     await reviewController.getQueueReviewsAsync(req, res)
 );
 
+router.get('/user/:userId', async (req: Request, res: Response) => 
+    await reviewController.getReviewsByUserIdAsync(req, res)
+);
+
+router.post('/edit', async (req: Request, res: Response) =>
+    await reviewController.editReviewAsync(req, res)
+);
+
+router.post('/delete', async (req: Request, res: Response) =>
+    await reviewController.deleteReviewAsync(req, res)
+);
+
 export default router;

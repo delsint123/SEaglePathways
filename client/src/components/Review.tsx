@@ -30,7 +30,6 @@ export default function Review(): ReactElement {
                     message: 'Error',
                     description: error.response.data.error,
                     placement: 'bottomRight',
-                    duration: 60
                 });
             });
     }
