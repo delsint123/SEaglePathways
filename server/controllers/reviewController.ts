@@ -135,6 +135,7 @@ async function getReviewByIdAsync(request: Request, response: Response): Promise
     try {
         const completeReview = {
             reviewId: review[0].reviewId,
+            userId: review[0].userId,
             title: review[0].title, 
             company: review[0].name,
             description: review[0].description, 

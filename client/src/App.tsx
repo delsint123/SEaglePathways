@@ -199,7 +199,17 @@ function Root(): ReactElement {
                     />
                     <Route path='/login' element={<Login />}/>
                     <Route path='/register' element={<Register />}/>
-                    <Route path='/review/:reviewId' element={<Review />}/>
+                    <Route path='/review/:reviewId' element={
+                            <Review 
+                                companies={companies} 
+                                tags={tags} 
+                                getCompaniesAsync={getCompaniesAsync}
+                                getTagsAsync={getTagsAsync}
+                                addCompany={addCompany} 
+                                addTag={addTag}
+                            />
+                        }
+                    />
                     <Route path='/profile' element={
                             <Profile 
                                 companies={companies} 

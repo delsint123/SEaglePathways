@@ -31,12 +31,18 @@
 
 .reviewPage__date {
     font-size: medium;
+    margin-right: 15px;
 }
 
 .reviewPage__companyGradeContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.reviewPage__edit:hover {
+    color: #178559 !important;
+    border-color: #178559 !important;
 }
 
 .blueDivider {
