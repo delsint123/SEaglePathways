@@ -1,5 +1,5 @@
 import React, {ReactElement} from 'react';
-import {Button, Form, Input, notification} from 'antd';
+import {Button, Card, Form, Input, Typography, notification} from 'antd';
 import {Link, useNavigate} from 'react-router-dom';
 import '../styling/Login.css';
 import axios, { AxiosResponse } from 'axios';
@@ -38,62 +38,65 @@ export default function Login(): ReactElement {
                 });
             });
     };
-    
-    const onFinishFailed = (errorInfo: any) => {
-        console.log('Failed:', errorInfo);
-    };
 
     return (
-        <div className='login__container content'>
+        <div className='loginContainer content'>
             {contextHolder}
 
-            <h1>Log In</h1>
-            
-            {/*Uses form, button, and input components retrieved from AntDesign*/}
-            <Form
+            <Card 
+                title='Login'
                 className='login'
-                name="login"
-                labelCol={{ span: 8 }}
-                wrapperCol={{ span: 16 }}
-                style={{ maxWidth: 600 }}
-                initialValues={{ remember: true }}
-                onFinish={loginUser}
-                autoComplete="off"
+                headStyle={{ fontSize:"21px"}}
             >
-                <Form.Item
-                    label="Email"
-                    name="email"
-                    rules={[
-                        {
-                        required: true,
-                        message: 'Please input your email!',
-                        },
-                    ]}
+                <Form
+                    name="login"
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ maxWidth: 600 }}
+                    initialValues={{ remember: true }}
+                    onFinish={loginUser}
+                    autoComplete="off"
                 >
-                    <Input />
-                </Form.Item>
+                    <Form.Item
+                        label="Email"
+                        name="email"
+                        rules={[
+                            {
+                            required: true,
+                            message: 'Please input your email!',
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
 
-                <Form.Item
-                    label="Password"
-                    name="password"
-                    rules={[
-                        {
-                        required: true,
-                        message: 'Please input your password!',
-                        },
-                    ]}
-                >
-                    <Input.Password />
-                </Form.Item>
+                    <Form.Item
+                        label="Password"
+                        name="password"
+                        rules={[
+                            {
+                            required: true,
+                            message: 'Please input your password!',
+                            },
+                        ]}
+                    >
+                        <Input.Password />
+                    </Form.Item>
 
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                    <Button type="primary" htmlType="submit">
-                        Submit
-                    </Button>
-                </Form.Item>
-            </Form>
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                        <Button type="primary" htmlType="submit">
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
 
-            <Link to={"/register"}>Register</Link>
+                <div style={{textAlign: 'center'}}>
+                    <Typography.Text>No Account? </Typography.Text>
+                    <Link to={"/register"}>Register Here</Link>
+                </div>
+            </Card>
+            
+            
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import React, {ReactElement} from 'react';
 import {BrowserRouter, Route, Routes, Link, useNavigate} from 'react-router-dom';
-import {Button, Dropdown, Menu, MenuProps, notification} from 'antd';
+import {Button, ConfigProvider, Dropdown, Menu, MenuProps, Switch, notification, theme} from 'antd';
 import ReviewQueue from './components/ReviewQueue.tsx';
 import Login from './components/Login.tsx';
 import Register from './components/Register.tsx';
@@ -19,6 +19,7 @@ import form from 'antd/es/form/index';
 function Root(): ReactElement { 
     const [companies, setCompanies] = React.useState<ICompany[]>([]);
     const [tags, setTags] = React.useState<ITag[]>([]);
+    const [isThemeDark, setIsThemeDark] = React.useState<boolean>(false);
 
     const isUserLoggedOut = sessionStorage.getItem('user') == null;
 
@@ -156,53 +157,78 @@ function Root(): ReactElement {
 
     return (
         <>
-            {contextHolder}
-            {/* Setup navigation bar */}
-            <nav className='nav'>   
-                <Link to={"/"} className="nav__logo"><img alt="SEaglePathways" src={Logo} className="logo"/></Link>
+            
+            <ConfigProvider 
+                    theme={{
+                        token: {
+                          colorPrimary: '#01794d',
+                          borderRadius: 6,
+                        },
+                    }}
+                >
+                {contextHolder}
+                {/* Setup navigation bar */}
+                <nav className='nav'>   
+                    <Link to={"/"} className="nav__logo"><img alt="SEaglePathways" src={Logo} className="logo"/></Link>
 
-                {isUserLoggedOut ?
-                    <Button onClick={() => navigate('/login')} className='nav__login'>Login</Button> 
-                    : 
-                    <Dropdown menu={avatar} overlayStyle={{ width: "150px"}}> 
-                        <img alt="avatar" src={EagleAvatar} className="nav__avatar"/>
-                    </Dropdown>
-                }
-            </nav>
+                    {isUserLoggedOut &&
+                        <Button onClick={() => navigate('/register')} className='nav__login'>Register</Button> 
+                    }
 
-            {/* Setup routes */}
-            <Routes>
-                <Route path='/' element={
-                        <ReviewQueue 
-                            companies={companies} 
-                            tags={tags} 
-                            getCompaniesAsync={getCompaniesAsync}
-                            getTagsAsync={getTagsAsync}
-                            addCompany={addCompany} 
-                            addTag={addTag} 
-                        />
+                    {isUserLoggedOut ?
+                        <Button onClick={() => navigate('/login')} className='nav__login'>Login</Button> 
+                        : 
+                        <Dropdown menu={avatar} overlayStyle={{ width: "150px"}}> 
+                            <img alt="avatar" src={EagleAvatar} className="nav__avatar"/>
+                        </Dropdown>
                     }
-                />
-                <Route path='/login' element={<Login />}/>
-                <Route path='/register' element={<Register />}/>
-                <Route path='/review/:reviewId' element={<Review />}/>
-                <Route path='/profile' element={
-                        <Profile 
-                            companies={companies} 
-                            tags={tags} 
-                            getCompaniesAsync={getCompaniesAsync}
-                            getTagsAsync={getTagsAsync}
-                            addCompany={addCompany} 
-                            addTag={addTag} 
-                        />
-                    }
-                />
-            </Routes>
-                
-            {/* Setup footer */}
-            <footer className='footer'>
-                <Link to={"/"}><img alt="SEaglePathways" src={Logo} className="footer__logo"/></Link>
-            </footer>
+                </nav>
+
+                {/* Setup routes */}
+                <Routes>
+                    <Route path='/' element={
+                            <ReviewQueue 
+                                companies={companies} 
+                                tags={tags} 
+                                getCompaniesAsync={getCompaniesAsync}
+                                getTagsAsync={getTagsAsync}
+                                addCompany={addCompany} 
+                                addTag={addTag} 
+                            />
+                        }
+                    />
+                    <Route path='/login' element={<Login />}/>
+                    <Route path='/register' element={<Register />}/>
+                    <Route path='/review/:reviewId' element={
+                            <Review 
+                                companies={companies} 
+                                tags={tags} 
+                                getCompaniesAsync={getCompaniesAsync}
+                                getTagsAsync={getTagsAsync}
+                                addCompany={addCompany} 
+                                addTag={addTag}
+                            />
+                        }
+                    />
+                    <Route path='/profile' element={
+                            <Profile 
+                                companies={companies} 
+                                tags={tags} 
+                                getCompaniesAsync={getCompaniesAsync}
+                                getTagsAsync={getTagsAsync}
+                                addCompany={addCompany} 
+                                addTag={addTag} 
+                            />
+                        }
+                    />
+                </Routes>
+                    
+                {/* Setup footer */}
+                <footer className='footer'>
+                    <Link to={"/"}><img alt="SEaglePathways" src={Logo} className="footer__logo"/></Link>
+                </footer>
+            </ConfigProvider>
+
         </>
     );
 }
@@ -212,7 +238,7 @@ function App(): ReactElement {
         <>
             {/* Setup React Router */}
             <BrowserRouter>
-                <Root />
+                    <Root />
             </BrowserRouter>
         </>
     );

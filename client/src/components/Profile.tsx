@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 
-import { Typography, notification, Card, Table, Tag, Tooltip, Popconfirm, Button } from "antd";
+import { Typography, notification, Card, Table, Tag, Tooltip, Popconfirm } from "antd";
 import IUser from "../../../server/models/userModel";
 import axios from "axios";
 import "../styling/Profile.css";
@@ -192,7 +192,6 @@ export default function Profile(props: ProfileProps): ReactElement {
                 <Card 
                     className='profileDetails' 
                     title="Profile" 
-                    headStyle={{ fontSize:"21px", padding: "15px 24px"}}
                     loading={userDetails.userId === null}
                 >
                     <Paragraph>
@@ -213,8 +212,6 @@ export default function Profile(props: ProfileProps): ReactElement {
                 <Card 
                     className='userReviews' 
                     title="Your Reviews" 
-                    headStyle={{ fontSize:"21px", padding: "15px 24px"}}
-                    bodyStyle={{ paddingBottom: "0px"}}
                     loading={userReviews.length === 0}
                 >
                     <Table

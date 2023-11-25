@@ -4,6 +4,10 @@
     min-height: 270.422px;
 }
 
+.review > .ant-card-head {
+    font-size: 20px;
+}
+
 .review:hover {
     cursor: pointer;
     border-color:  rgba(1, 121, 76, 0.4);
@@ -83,4 +87,8 @@
 
 .filterForm__submit:hover{
     background-color: rgba(1, 121, 76) !important;
+}
+
+.filterForm__select {
+    width: 150px !important;
 }

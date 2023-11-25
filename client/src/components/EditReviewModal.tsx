@@ -1,7 +1,6 @@
 import React, {ReactElement, useEffect} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button, notification} from 'antd';
-import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
@@ -73,9 +72,7 @@ export default function EditReviewModal(props: EditReviewModalProps): ReactEleme
             .then((res) => {
                 props.setIsEditing(false);
                 form.resetFields();  
-                
-                console.log(res.data)
-                
+                                
                 notificationApi.success({
                     message: 'Review Submitted',
                     description: 'Your review has been submitted successfully!',
@@ -155,8 +152,7 @@ export default function EditReviewModal(props: EditReviewModalProps): ReactEleme
             <Modal title="Edit Review" open={props.isEditing} onOk={form.submit} onCancel={handleCancel} >
                 {/*Uses form, form.item, and select components retrieved from AntDesign*/}
                 <Form
-                    className='login'
-                    name="login"
+                    name="Edit Review"
                     form={form}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
