@@ -60,11 +60,7 @@ export default function Profile(props: ProfileProps): ReactElement {
                 setUserReviews(reviews);
             })
             .catch((error) => {
-                notificationApi.error({
-                    message: 'Error',
-                    description: error.response.data.error,
-                    placement: 'bottomRight',
-                });
+                console.log(error);
             });
     }
 
@@ -212,7 +208,6 @@ export default function Profile(props: ProfileProps): ReactElement {
                 <Card 
                     className='userReviews' 
                     title="Your Reviews" 
-                    loading={userReviews.length === 0}
                 >
                     <Table
                         dataSource={userReviews}

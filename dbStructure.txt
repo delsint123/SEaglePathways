@@ -3,7 +3,7 @@ CREATE TABLE user (
      firstName          varchar(30),
 	 lastName			varchar(30),
      email           	varchar(50),
-	 password			varchar(30),
+	 password			varchar(60),
 	 graduationYear    integer,
      primary key (userId)
 );
