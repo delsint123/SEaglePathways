@@ -30,6 +30,7 @@
     "@babel/preset-env": "^7.23.2",
     "@babel/preset-typescript": "^7.23.2",
     "@jest/globals": "^29.7.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.4",
     "@types/cors": "^2.8.14",
     "@types/dateformat": "^5.0.1",
@@ -44,6 +45,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dateformat": "^5.0.3",

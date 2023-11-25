@@ -2,12 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import bcrypt from 'bcrypt';
 
 import reviewRouter from './routes/reviewRoute';
 import userRouter from './routes/userRoute';
 import companyRouter from './routes/companyRoute';
 import tagRouter from './routes/tagRoute';
-import session from 'express-session';
 
 declare module 'express-session' {
     interface SessionData {
@@ -25,6 +26,7 @@ const corsOptions = {
 
 // Middleware
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));

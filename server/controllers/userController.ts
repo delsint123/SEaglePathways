@@ -4,6 +4,7 @@ import IUserRequestModel from '../models/userRequestModel';
 import IUser from '../models/userModel';
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import queries from './queries/userQueries';
+import bcrypt from 'bcrypt';
 
 async function registerAsync(request: Request, response: Response): Promise<void> {
 
@@ -32,8 +33,10 @@ async function registerAsync(request: Request, response: Response): Promise<void
 
     try {
         const [firstName, lastName] = user.name.split(' ');
+        const hashedPassword = await bcrypt.hash(user.password, 10);
 
-        const [result] = await db.query<ResultSetHeader>(queries.createUser, [firstName, lastName, user.email, user.password, user.graduationYear]);
+        const [result] = await db.query<ResultSetHeader>(queries.createUser, 
+            [firstName, lastName, user.email, hashedPassword, user.graduationYear]);
 
         if (result.affectedRows) {
             response.status(200).json({
@@ -61,11 +64,15 @@ async function loginAsync(request: Request, response: Response): Promise<void> {
     try {
         const [result] = await db.query<RowDataPacket[]>(queries.getUser, [user.email]);
 
-        if(result.length && result[0].password == user.password) {
+        const storedHashedPassword = result[0].password;
+        const isPasswordCorrect = await bcrypt.compare(user.password, storedHashedPassword);
+
+        if(result.length && isPasswordCorrect) {
             request.session.userId = result[0].userId;
 
             response.status(200).json({
-                ...result[0]
+                ...result[0],
+                password: undefined
             } as IUser);
             
             console.log("User logged in!")
