@@ -1,11 +1,11 @@
 import React, {ReactElement, useEffect} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button, notification} from 'antd';
-import IReview from '../../../server/models/reviewModel';
+import IReview from '../models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
-import ICompany from '../../../server/models/companyModel';
-import ITag from '../../../server/models/tagModel';
+import ICompany from '../models/companyModel';
+import ITag from '../models/tagModel';
 
 //Define the properties that this component expects
 interface SubmitReviewModalProps {

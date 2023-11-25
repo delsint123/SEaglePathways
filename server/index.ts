@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 import reviewRouter from './routes/reviewRoute';
 import userRouter from './routes/userRoute';

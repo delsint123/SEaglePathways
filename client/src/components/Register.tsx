@@ -1,6 +1,6 @@
 import React, {ReactElement} from 'react';
 import {Button, Card, Form, Input, notification} from 'antd';
-import IUserRequestModel from '../../../server/models/userRequestModel';
+import IUserRequestModel from '../models/userRequestModel';
 import '../styling/Register.css';
 import axios, { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';

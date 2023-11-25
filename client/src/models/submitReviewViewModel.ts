@@ -1,5 +1,4 @@
 import {Dayjs} from "dayjs";
-import ITag from "../../../server/models/tagModel";
 
 export default interface ISubmitReviewViewModel {
     title: string, 

@@ -11,10 +11,9 @@ import EagleAvatar from './assets/eagleAvatar.png';
 import './App.css';
 import Logo from './assets/SEaglePathways-04.png';
 import axios, { AxiosResponse } from 'axios';
-import { ItemType, MenuItemType } from 'antd/es/menu/hooks/useItems';
-import ICompany from '../../server/models/companyModel.ts';
-import ITag from '../../server/models/tagModel.ts';
-import form from 'antd/es/form/index';
+import { MenuItemType } from 'antd/es/menu/hooks/useItems';
+import ICompany from './models/companyModel.ts';
+import ITag from './models/tagModel.ts';
 
 function Root(): ReactElement { 
     const [companies, setCompanies] = React.useState<ICompany[]>([]);

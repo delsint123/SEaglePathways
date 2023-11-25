@@ -4,7 +4,7 @@ import IUserRequestModel from '../models/userRequestModel';
 import IUser from '../models/userModel';
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import queries from './queries/userQueries';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 async function registerAsync(request: Request, response: Response): Promise<void> {
 

@@ -3,12 +3,12 @@ import {Button, Tooltip, notification, List, Card, Typography, Pagination, Divid
 import '../styling/ReviewQueue.css';
 import SubmitReviewModal from './SubmitReviewModal';
 import axios, { AxiosResponse } from 'axios';
-import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
-import IQueueReviewRequest from '../../../server/models/queueReviewRequestModel';
+import IReviewViewModel from '../viewModels/reviewViewModel';
+import IQueueReviewRequest from '../models/queueReviewRequestModel';
 import { useNavigate } from 'react-router-dom';
-import ICompany from '../../../server/models/companyModel';
-import ITag from '../../../server/models/tagModel';
-import IReviewFilterRequest from '../../../server/models/reviewFilterRequestModel';
+import ICompany from '../models/companyModel';
+import ITag from '../models/tagModel';
+import IReviewFilterRequest from '../models/reviewFilterRequestModel';
 import IReviewFilterViewModel from '../models/reviewFilterViewModel';
 import EditReviewModal from './EditReviewModal';
 import { EditTwoTone } from '@ant-design/icons';
@@ -124,7 +124,7 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
             .catch((error) => {
                 notificationApi.error({
                     message: 'Error',
-                    description: error.response.data.error,
+                    description: error.response.data.error || 'Error',
                     placement: 'bottomRight',
                     duration: 60
                 });

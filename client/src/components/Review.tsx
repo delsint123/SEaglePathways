@@ -2,12 +2,12 @@ import React, {ReactElement, useEffect, useState} from 'react';
 import {notification, Typography, Divider, Tooltip, Tag, Card, Button} from 'antd';
 import '../styling/Review.css';
 import axios from 'axios';
-import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
+import IReviewViewModel from '../viewModels/reviewViewModel';
 import { useParams } from 'react-router-dom';
 import { EditTwoTone } from '@ant-design/icons';
 import EditReviewModal from './EditReviewModal';
-import ICompany from '../../../server/models/companyModel';
-import ITag from '../../../server/models/tagModel';
+import ICompany from '../models/companyModel';
+import ITag from '../models/tagModel';
 
 interface ReviewProps {
     companies: ICompany[],

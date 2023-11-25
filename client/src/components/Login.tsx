@@ -3,7 +3,7 @@ import {Button, Card, Form, Input, Typography, notification} from 'antd';
 import {Link, useNavigate} from 'react-router-dom';
 import '../styling/Login.css';
 import axios, { AxiosResponse } from 'axios';
-import IUserLoginModel from '../../../server/models/userLoginModel';
+import IUserLoginModel from '../models/userLoginModel';
 
 export default function Login(): ReactElement {
     //used to navigate to another route

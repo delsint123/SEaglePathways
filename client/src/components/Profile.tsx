@@ -1,14 +1,14 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 
 import { Typography, notification, Card, Table, Tag, Tooltip, Popconfirm } from "antd";
-import IUser from "../../../server/models/userModel";
+import IUser from "../models/userModel";
 import axios from "axios";
 import "../styling/Profile.css";
-import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
+import IReviewViewModel from '../viewModels/reviewViewModel';
 import { useNavigate } from 'react-router-dom';
 import EditReviewModal from './EditReviewModal';
-import ICompany from '../../../server/models/companyModel';
-import ITag from '../../../server/models/tagModel';
+import ICompany from '../models/companyModel';
+import ITag from '../models/tagModel';
 import { DeleteTwoTone, EditTwoTone } from '@ant-design/icons';
 import { AlignType } from 'rc-table/lib/interface';
 
