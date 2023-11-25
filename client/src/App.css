@@ -1,6 +1,7 @@
 .content {
     min-height: calc(100vh - 210px);
     padding-bottom: 30px;
+    background-color: rgba(0, 71, 133, 0.05);
 }
 
 .nav {
@@ -30,6 +31,7 @@
     border-color: rgba(1, 121, 76, 0.8);
     border-style: solid;
     border-width: 2px;
+    background-color: rgba(0, 71, 133, 0.1);
 }
 
 .nav__avatar:hover {
@@ -67,13 +69,7 @@
     margin-top: 10px;
 }
 
-.ant-pagination-item-active {
-    border-color: rgba(1, 121, 76, 0.8) !important;
-}
-
-.ant-pagination-item-active > a {
-    color: rgba(1, 121, 76, 0.8) !important;
-}
+/*Ant Design styling overrrides*/
 
 .ant-btn-primary {
     background-color: rgba(0, 71, 133, 0.8) !important;

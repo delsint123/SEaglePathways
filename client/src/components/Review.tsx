@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from 'react';
-import {notification, Typography, Divider, Tooltip, Tag} from 'antd';
+import {notification, Typography, Divider, Tooltip, Tag, Card} from 'antd';
 import '../styling/Review.css';
 import axios from 'axios';
 import IReviewViewModel from '../../../server/viewModels/reviewViewModel';
@@ -11,7 +11,7 @@ export default function Review(): ReactElement {
     //initialize state
     const [currentReview, setCurrentReview] = useState<IReviewViewModel>({} as IReviewViewModel);
     const [notificationApi, contextHolder] = notification.useNotification();
-    const { Paragraph, Text, Title } = Typography;
+    const { Paragraph, Text } = Typography;
 
     const instance = axios.create({
         baseURL: 'http://localhost:5000'
@@ -39,34 +39,50 @@ export default function Review(): ReactElement {
     }, []);
 
     return (
-        <div className='content'>
-
+        <div className='content reviewPageContainer'>
             {contextHolder}
             
-            <div className='reviewPg'>
-                <Title level={2}>{currentReview.title}</Title>
-                <Divider />
+            <Card 
+                title={currentReview.title}
+                className='reviewPage'
+                extra={
+                    <Text italic={true} className='reviewPage__date'>
+                        {`${currentReview.startDate?.slice(0, 10)} ~ ${currentReview.endDate?.slice(0, 10)}`}
+                    </Text>
+                }
+                loading={currentReview.title === undefined}
+            >
+                <div className='reviewPage__companyGradeContainer'>
+                    <Paragraph>
+                        <Text className='reviewPage__company'>{currentReview.company}</Text>
+                    </Paragraph>
+                    <Paragraph>
+                        <Text className='reviewPage__grade'>{currentReview.gradeLevel}</Text>
+                    </Paragraph>                    
+                </div>
 
+                {currentReview.tags?.length !== 0 &&
+                    <Divider orientation='left' orientationMargin="0px" className='blueDivider'>
+                        Tags
+                    </Divider>
+                }
+                
                 {currentReview.tags &&
                     currentReview.tags.map((tag, index) => (
                         <Tooltip title={tag.description} placement='top'>
-                            <Tag key={index}>{tag.name}</Tag>
+                            <Tag key={index} className='reviewPage__tags'>{tag.name}</Tag>
                         </Tooltip>
                     ))
                 }
 
-                <br />
-
-                <Text>{currentReview.company}</Text>
-                <br />
-                <Text italic={true}>
-                    {`${currentReview.startDate?.slice(0, 10)} ~ ${currentReview.endDate?.slice(0, 10)}`}
-                </Text>
-                <br />
-                <Text>{currentReview.gradeLevel}</Text>
-                <Paragraph>{currentReview.description}</Paragraph>
-            </div>
-            
+                <Divider orientation='left' orientationMargin="0px" className='greenDivider'>
+                    Description
+                </Divider>
+                
+                <Paragraph>
+                    <Text>{currentReview.description}</Text>
+                </Paragraph>
+            </Card>    
         </div>
     );
 }

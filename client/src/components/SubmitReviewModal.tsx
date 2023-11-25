@@ -1,7 +1,6 @@
 import React, {ReactElement, useEffect} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Modal, Form, Select, Input, DatePicker, Divider, Space, Button, notification} from 'antd';
-import '../styling/SubmitReviewModal.css';
 import IReview from '../../../server/models/reviewModel';
 import axios, { AxiosResponse } from 'axios';
 import ISubmitReviewViewModel from '../models/submitReviewViewModel';
@@ -146,8 +145,7 @@ export default function SubmitReviewModal(props: SubmitReviewModalProps): ReactE
             <Modal title="Submit Review" open={props.isModalOpen} onOk={form.submit} onCancel={handleCancel}>
                 {/*Uses form, form.item, and select components retrieved from AntDesign*/}
                 <Form
-                    className='login'
-                    name="login"
+                    name="Submit Review"
                     form={form}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}

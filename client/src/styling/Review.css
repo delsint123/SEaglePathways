@@ -1,3 +1,50 @@
-.reviewPg {
-    padding: 15px 150px;
+.reviewPageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reviewPage {
+    width: 800px;
+    padding: 20px;
+    border-color: rgba(1, 121, 76, 0.16);
+    box-shadow: 0 1px 2px -2px rgba(1, 121, 76, 0.16), 0 3px 6px 0 rgba(1, 121, 76, 0.12), 0 5px 12px 4px rgba(1, 121, 76, 0.09);
+}
+
+.reviewPage > .ant-card-head {
+    font-size: 21px;
+}
+
+.reviewPage__company {
+    color: rgba(1, 121, 76);
+    font-size: large;
+}
+
+.reviewPage__tags {
+    margin-bottom: 10px;
+}
+
+.reviewPage__grade {
+    color: rgba(0, 71, 133);
+    font-size: large;
+}
+
+.reviewPage__date {
+    font-size: medium;
+}
+
+.reviewPage__companyGradeContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.blueDivider {
+    color: rgba(0, 71, 133) !important;
+    font-size: 18px !important;
+}
+
+.greenDivider {
+    color: rgba(1, 121, 76) !important;
+    font-size: 18px !important;
 }

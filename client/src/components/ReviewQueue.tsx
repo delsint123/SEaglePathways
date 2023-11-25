@@ -139,13 +139,8 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
         ))
     }
 
-    const navigateToReview = (reviewId: number): void => {
-        if(isEditing) {
-            setTimeout(() => navigate(`/review/${reviewId}`), 1000);
-        }
-    }
-
-    const openEditModal = (reviewId: number): void => {
+    const openEditModal = (e: React.MouseEvent<HTMLElement>, reviewId: number): void => {
+        e.stopPropagation();
         setIsEditing(true);
         setReviewToEdit(reviews.find(review => review.reviewId === reviewId) as IReviewViewModel);
     }
@@ -197,7 +192,8 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
                         <Select 
                             showSearch
                             allowClear
-                            style={{ width: "150px", marginLeft: "10px"}}
+                            className='filterForm__select'
+                            style={{ marginLeft: "10px"}}
                             placeholder="Company"
                             optionFilterProp='children'
                             onSelect={(companyId) => setQueueFilters((prevFilters) => ({ ...prevFilters, companyId: companyId } as IReviewFilterViewModel)) }
@@ -211,7 +207,7 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
                         <Select 
                             showSearch
                             allowClear
-                            style={{ width: "150px"}}
+                            className='filterForm__select'
                             placeholder="Tag"
                             optionFilterProp='children'
                             onSelect={(tagId) => setQueueFilters((prevFilters) => ({ ...prevFilters, tagId: tagId } as IReviewFilterViewModel)) }
@@ -243,15 +239,14 @@ export default function ReviewQueue(props: ReviewQueueProps): ReactElement {
                     renderItem={review => (
                         <List.Item>
                             <Card 
-                                headStyle={{ fontSize:"20px" }} 
+                                className='review' 
+                                title={review.title}
+                                onClick={() => navigate(`/review/${review.reviewId}`)}
                                 extra={review.userId == currentUser && 
-                                    <Button onClick={() => openEditModal(review.reviewId)}>
+                                    <Button onClick={(e) => openEditModal(e, review.reviewId)}>
                                         <EditTwoTone twoToneColor='#004785'/>
                                     </Button>
                                 }
-                                className='review' 
-                                title={review.title}
-                                onClick={() => navigateToReview(review.reviewId)}
                                 loading={reviews.length === 0}
                             >
                                 <div className='review__companyDateContainer'>
